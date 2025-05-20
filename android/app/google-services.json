@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "616192795330",
+    "project_id": "kopi-nang",
+    "storage_bucket": "kopi-nang.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616192795330:android:f6afab9126a2820e80d15b",
+        "android_client_info": {
+          "package_name": "com.example.kopinang"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "616192795330-m27avm20j5mbtu2v2h5fmf08l508q21k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kopinang",
+            "certificate_hash": "d3da908d94c6b123f8495fc32da140936e68e7fa"
+          }
+        },
+        {
+          "client_id": "616192795330-6754hglchl6nr98eg6o8misobb6asnk7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFEkII9yEKL2TcxXJXwnIOE9JGkmp8fKc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "616192795330-6754hglchl6nr98eg6o8misobb6asnk7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "616192795330-9a6i171f563tcf11ahn7l5445u95ae5i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.tempProject"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
