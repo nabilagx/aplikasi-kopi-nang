@@ -48,7 +48,7 @@ class _HomeAdminState extends State<HomeAdmin> {
                 Navigator.pop(context); // tutup drawer dulu
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => KelolaProduk()),
+                  MaterialPageRoute(builder: (context) => KelolaProdukPage()),
                 );
               },
             ),
