@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'login_screen.dart';
-import 'customer_bottom_nav.dart'; // import ini penting!
+import '../login_screen.dart';
+import '../../widgets/customer_bottom_nav.dart'; // import ini penting!
 
 class ProfilCustomer extends StatelessWidget {
   const ProfilCustomer({super.key});

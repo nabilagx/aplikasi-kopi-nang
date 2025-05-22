@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'customer_bottom_nav.dart';
+import '../../widgets/customer_bottom_nav.dart';
+import '../../widgets/PromoCarousel.dart';
+import 'detail_menu_screen.dart';
 
 class HomeCustomer extends StatefulWidget {
   const HomeCustomer({super.key});
@@ -21,6 +23,7 @@ class _HomeCustomerState extends State<HomeCustomer> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
+            // Header Location dan Icon Chat
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -28,17 +31,23 @@ class _HomeCustomerState extends State<HomeCustomer> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Location', style: TextStyle(color: Colors.grey)),
-                    Text('Kaliwates, Kab., Jember',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Kaliwates, Kab., Jember',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO: Implement chat function
+                  },
                   icon: const Icon(Icons.chat_bubble_outline),
                 ),
               ],
             ),
             const SizedBox(height: 12),
+
+            // Search TextField
             TextField(
               onChanged: (val) => setState(() => searchQuery = val.toLowerCase()),
               decoration: InputDecoration(
@@ -54,72 +63,51 @@ class _HomeCustomerState extends State<HomeCustomer> {
             ),
             const SizedBox(height: 20),
 
-            // PROMO
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('promos')
-                  .where('aktif', isEqualTo: true)
-                  .snapshots(),
+            // Promo Carousel Section dengan StreamBuilder
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance.collection('promos').snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const SizedBox();
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
-                final promo = snapshot.data!.docs.first;
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    alignment: Alignment.bottomLeft,
-                    children: [
-                      Image.network(
-                        promo['gambar'],
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 150,
-                      ),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        color: Colors.black.withOpacity(0.6),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              promo['judul'],
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Gunakan kode: ${promo['kode']}',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final promos = snapshot.data?.docs ?? [];
+                return PromoCarousel(promos: promos);
               },
             ),
 
             const SizedBox(height: 24),
 
-            const Text('Semua Produk',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            // Label Semua Produk
+            const Text(
+              'Semua Produk',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
 
-            StreamBuilder<QuerySnapshot>(
+            // Produk Grid dengan filter searchQuery
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance.collection('produk').snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final produk = snapshot.data!.docs
-                    .where((doc) =>
-                    doc['nama'].toString().toLowerCase().contains(searchQuery))
-                    .toList();
+                final produk = snapshot.data?.docs
+                    .where((doc) => doc['nama']
+                    .toString()
+                    .toLowerCase()
+                    .contains(searchQuery))
+                    .toList() ??
+                    [];
+
+                if (produk.isEmpty) {
+                  return const Center(child: Text('Produk tidak ditemukan'));
+                }
 
                 return GridView.builder(
                   shrinkWrap: true,
@@ -132,8 +120,17 @@ class _HomeCustomerState extends State<HomeCustomer> {
                   ),
                   itemCount: produk.length,
                   itemBuilder: (context, index) {
-                    final item = produk[index];
-                    return Container(
+                    final item = produk[index].data();
+                    return GestureDetector(
+                        onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DetailMenuScreen(menuData: item),
+                        ),
+                      );
+                    },
+                    child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.grey.shade300),
@@ -142,26 +139,32 @@ class _HomeCustomerState extends State<HomeCustomer> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                            borderRadius:
+                            const BorderRadius.vertical(top: Radius.circular(12)),
                             child: Image.network(
-                              item['gambar'],
-                              height: 110,  // gambar agak dipendekkan
+                              item['gambar'] ?? '',
+                              height: 110,
                               width: double.infinity,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) => Container(
-                                height: 115,
+                                height: 110,
                                 color: Colors.grey.shade200,
-                                child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                                child: const Icon(
+                                  Icons.broken_image,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 6),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  item['nama'],
+                                  item['nama'] ?? '-',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
@@ -171,14 +174,13 @@ class _HomeCustomerState extends State<HomeCustomer> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Rp${item['harga']}',
+                                  'Rp${item['harga'] ?? '-'}',
                                   style: TextStyle(
                                     color: Colors.blue.shade700,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-
                               ],
                             ),
                           ),
@@ -186,9 +188,13 @@ class _HomeCustomerState extends State<HomeCustomer> {
                           Align(
                             alignment: Alignment.bottomRight,
                             child: IconButton(
-                              icon: const Icon(Icons.add_circle, color: Colors.blue, size: 24),
+                              icon: const Icon(
+                                Icons.add_circle,
+                                color: Colors.blue,
+                                size: 24,
+                              ),
                               onPressed: () {
-                                // TODO: Tambahkan logika tambah ke keranjang
+                                // TODO keranjang
                               },
                               constraints: const BoxConstraints(),
                               padding: EdgeInsets.zero,
@@ -196,11 +202,9 @@ class _HomeCustomerState extends State<HomeCustomer> {
                           ),
                         ],
                       ),
-                    );
+                    ));
                   },
                 );
-
-
               },
             ),
           ],

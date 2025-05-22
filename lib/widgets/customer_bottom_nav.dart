@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'home_customer.dart';
+import '../screens/customer/home_customer.dart';
 // import 'pesanan_customer.dart';
 // import 'riwayat_customer.dart';
-import 'profil_customer.dart';
+import '../screens/customer/profil_customer.dart';
 
 class CustomerBottomNav extends StatefulWidget {
   final int currentIndex;

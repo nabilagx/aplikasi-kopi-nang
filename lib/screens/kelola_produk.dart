@@ -44,7 +44,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
       String base64Image = base64Encode(bytes);
 
       final response = await http.post(
-        Uri.parse('https://api.imgur.com/3/image'),
+        Uri.parse('https://api.imgur.com/3/image'), //POST API
         headers: {
           'Authorization': 'Client-ID a48dbd4c499304d',
         },
@@ -267,7 +267,9 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: DrawerAdmin(context),  // <-- di sini, bukan di AppBar
+      drawer: DrawerAdmin(
+        scaffoldContext: context,
+      ),
       appBar: AppBar(
         title: Text('Kelola Produk'),
         actions: [
