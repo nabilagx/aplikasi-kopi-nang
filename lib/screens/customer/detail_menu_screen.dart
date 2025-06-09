@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'cart_provider.dart';
 
 class DetailMenuScreen extends StatelessWidget {
   final Map<String, dynamic> menuData;
 
   const DetailMenuScreen({super.key, required this.menuData});
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +25,11 @@ class DetailMenuScreen extends StatelessWidget {
                 height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 200,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.broken_image, size: 60, color: Colors.grey),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -30,7 +39,7 @@ class DetailMenuScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Rp ${menuData['harga'].toString()}',
+              'Rp ${menuData['harga']?.toString() ?? '0'}',
               style: const TextStyle(fontSize: 20, color: Colors.brown),
             ),
             const SizedBox(height: 16),
@@ -43,12 +52,16 @@ class DetailMenuScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // LOGIKA CART SOON
+                  Provider.of<CartProvider>(context, listen: false).addItem(menuData);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Produk ditambahkan ke keranjang')),
+                  );
                 },
-                child: const Text("Pesan Sekarang"),
+                child: const Text("Tambah ke Keranjang"),
               ),
             ),
           ],
+
         ),
       ),
     );

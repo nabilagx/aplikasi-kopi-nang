@@ -4,10 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
-
 
 class KelolaProdukPage extends StatefulWidget {
   @override
@@ -17,7 +14,7 @@ class KelolaProdukPage extends StatefulWidget {
 class _KelolaProdukPageState extends State<KelolaProdukPage> {
   final picker = ImagePicker();
 
-  DocumentSnapshot? editingProduct;
+  Map<String, dynamic>? editingProduct;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -28,6 +25,8 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
 
   File? _imageFile;
   bool _loading = false;
+
+  final String apiBaseUrl = 'http://192.168.1.7/api/Produk';
 
   @override
   void dispose() {
@@ -44,7 +43,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
       String base64Image = base64Encode(bytes);
 
       final response = await http.post(
-        Uri.parse('https://api.imgur.com/3/image'), //POST API
+        Uri.parse('https://api.imgur.com/3/image'),
         headers: {
           'Authorization': 'Client-ID a48dbd4c499304d',
         },
@@ -66,7 +65,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
     }
   }
 
-  void openForm({DocumentSnapshot? product}) {
+  void openForm({Map<String, dynamic>? product}) {
     if (product != null) {
       _namaController.text = product['nama'] ?? '';
       _deskripsiController.text = product['deskripsi'] ?? '';
@@ -202,34 +201,63 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                   }
 
                   try {
+                    Map<String, dynamic> productData;
+
                     if (editingProduct == null) {
-                      await FirebaseFirestore.instance.collection('produk').add({
+                      // TAMBAH PRODUK (POST) — tanpa id dan createdAt
+                      productData = {
                         'nama': _namaController.text.trim(),
                         'deskripsi': _deskripsiController.text.trim(),
                         'harga': int.parse(_hargaController.text.trim()),
                         'stok': int.parse(_stokController.text.trim()),
                         'gambar': imageUrl ?? '',
-                        'created_at': FieldValue.serverTimestamp(),
-                      });
+                        'updatedAt': DateTime.now().toIso8601String(),
+                      };
+
+                      final response = await http.post(
+                        Uri.parse(apiBaseUrl),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode(productData),
+                      );
+
+                      if (response.statusCode != 201) {
+                        print('Error response: ${response.body}');
+                        throw Exception('Gagal tambah produk');
+                      }
                     } else {
-                      Map<String, dynamic> updateData = {
+                      // EDIT PRODUK (PUT) — dengan id dan createdAt
+                      productData = {
+                        'id': editingProduct!['id'],
                         'nama': _namaController.text.trim(),
                         'deskripsi': _deskripsiController.text.trim(),
                         'harga': int.parse(_hargaController.text.trim()),
                         'stok': int.parse(_stokController.text.trim()),
+                        'gambar': imageUrl ?? editingProduct!['gambar'],
+                        'createdAt': editingProduct!['createdAt'],
+                        'updatedAt': DateTime.now().toIso8601String(),
                       };
-                      if (imageUrl != null) updateData['gambar'] = imageUrl;
 
-                      await FirebaseFirestore.instance
-                          .collection('produk')
-                          .doc(editingProduct!.id)
-                          .update(updateData);
+                      final id = editingProduct!['id'].toString();
+                      final response = await http.put(
+                        Uri.parse('$apiBaseUrl/$id'),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode(productData),
+                      );
+
+                      if (response.statusCode != 200) {
+                        print('Error response: ${response.body}');
+                        throw Exception('Gagal update produk');
+                      }
                     }
 
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Produk berhasil disimpan')),
                     );
+                    setState(() {
+                      _imageFile = null;
+                      editingProduct = null;
+                    });
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Gagal simpan produk: $e')),
@@ -237,12 +265,12 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                   } finally {
                     setState(() {
                       _loading = false;
-                      _imageFile = null;
-                      editingProduct = null;
                     });
                   }
                 },
-                child: _loading ? CircularProgressIndicator(color: Colors.white) : Text(editingProduct == null ? 'Tambah' : 'Update'),
+                child: _loading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text(editingProduct == null ? 'Tambah' : 'Update'),
               ),
             ],
           );
@@ -253,10 +281,14 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
 
   Future deleteProduct(String id) async {
     try {
-      await FirebaseFirestore.instance.collection('produk').doc(id).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Produk berhasil dihapus')),
-      );
+      final response = await http.delete(Uri.parse('$apiBaseUrl/$id'));
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Produk berhasil dihapus')),
+        );
+      } else {
+        throw Exception('Gagal hapus produk');
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal hapus produk: $e')),
@@ -264,12 +296,21 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchProducts() async {
+    final response = await http.get(Uri.parse(apiBaseUrl));
+    if (response.statusCode == 200) {
+      List<dynamic> jsonList = jsonDecode(response.body);
+      // Pastikan API mengirim array produk dengan properti 'id', 'nama', dll.
+      return jsonList.map((e) => e as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Gagal mengambil produk');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: DrawerAdmin(
-        scaffoldContext: context,
-      ),
+      drawer: DrawerAdmin(scaffoldContext: context),
       appBar: AppBar(
         title: Text('Kelola Produk'),
         actions: [
@@ -281,52 +322,72 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('produk').orderBy('created_at', descending: true).snapshots(),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchProducts(),
         builder: (context, snapshot) {
           if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
-          if (snapshot.connectionState == ConnectionState.waiting) return Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
 
-          final produkDocs = snapshot.data!.docs;
+          final products = snapshot.data!;
+          if (products.isEmpty) return Center(child: Text('Belum ada produk'));
 
-          if (produkDocs.isEmpty) {
-            return Center(child: Text('Belum ada produk'));
-          }
-
-          return ListView.builder(
-            itemCount: produkDocs.length,
-            itemBuilder: (context, index) {
-              final doc = produkDocs[index];
-              final data = doc.data()! as Map<String, dynamic>;
-
-              return Card(
-                margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  leading: (data['gambar'] != null && data['gambar'] != '')
-                      ? Image.network(data['gambar'], width: 60, fit: BoxFit.cover)
-                      : SizedBox(width: 60, child: Icon(Icons.image)),
-                  title: Text(data['nama'] ?? '-'),
-                  subtitle: Text('Harga: Rp${data['harga']?.toString() ?? '0'}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          openForm(product: doc);
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () {
-                          deleteProduct(doc.id);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              );
+          return RefreshIndicator(
+            onRefresh: () async {
+              setState(() {}); // refresh UI dengan FutureBuilder
             },
+            child: ListView.builder(
+              itemCount: products.length,
+              itemBuilder: (_, index) {
+                final p = products[index];
+                return Card(
+                  child: ListTile(
+                    leading: (p['gambar'] != null && p['gambar'] != '')
+                        ? Image.network(p['gambar'], width: 60, fit: BoxFit.cover)
+                        : Container(width: 60, color: Colors.grey[300], child: Icon(Icons.image_not_supported)),
+                    title: Text(p['nama'] ?? ''),
+                    subtitle: Text('Harga: Rp${p['harga'] ?? 0} | Stok: ${p['stok'] ?? 0}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () {
+                            openForm(product: p);
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text('Konfirmasi'),
+                                content: Text('Hapus produk "${p['nama']}"?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: Text('Batal'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: Text('Hapus'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirmed == true) {
+                              await deleteProduct(p['id'].toString());
+                              setState(() {});
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),

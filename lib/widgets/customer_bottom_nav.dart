@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../screens/customer/home_customer.dart';
+import '../screens/customer/order_detail_screen.dart';
 // import 'pesanan_customer.dart';
 // import 'riwayat_customer.dart';
 import '../screens/customer/profil_customer.dart';
+import '../screens/customer/order_history_page.dart';
 
 class CustomerBottomNav extends StatefulWidget {
   final int currentIndex;
@@ -22,13 +24,10 @@ class _CustomerBottomNavState extends State<CustomerBottomNav> {
       case 0:
         destination = const HomeCustomer();
         break;
-      // case 1:
-      //   destination = const PesananCustomer();
-      //   break;
-      // case 2:
-      //   destination = const RiwayatCustomer();
-      //   break;
-      case 3:
+      case 1:
+        destination = const OrderHistoryPage();
+        break;
+      case 2:
       destination = const ProfilCustomer();
         break;
       default:
@@ -54,7 +53,6 @@ class _CustomerBottomNavState extends State<CustomerBottomNav> {
       type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Pesanan"),
         BottomNavigationBarItem(icon: Icon(Icons.history), label: "Riwayat"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
       ],

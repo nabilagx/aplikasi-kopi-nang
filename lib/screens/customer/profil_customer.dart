@@ -29,7 +29,7 @@ class ProfilCustomer extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Profil")),
-      bottomNavigationBar: const CustomerBottomNav(currentIndex: 3),
+      bottomNavigationBar: const CustomerBottomNav(currentIndex: 2),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

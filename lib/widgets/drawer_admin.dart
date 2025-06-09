@@ -4,8 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kopinang/screens/add_admin.dart';
 import 'package:kopinang/screens/login_screen.dart';
 import 'package:kopinang/screens/setting_akun.dart';
+import 'package:kopinang/screens/lacak_order.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kopinang/screens/promo.dart';
+import 'package:kopinang/screens/admin_order_page.dart';
+import 'package:kopinang/screens/laporan_penjualan.dart';
+import 'package:kopinang/screens/verifikasi_pesanan.dart';
+import 'package:kopinang/screens/kelola_ulasan.dart';
 
 
 
@@ -80,7 +85,13 @@ class DrawerAdmin extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.list_alt),
             title: const Text('Kelola Pesanan'),
-            onTap: () => _handleSelect('Kelola Pesanan'),
+            onTap: () {
+              Navigator.pop(scaffoldContext);
+              Navigator.push(
+                scaffoldContext,
+                MaterialPageRoute(builder: (_) => AdminOrderPage()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.campaign),
@@ -96,22 +107,44 @@ class DrawerAdmin extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.bar_chart),
             title: const Text('Laporan Penjualan'),
-            onTap: () => _handleSelect('Laporan Penjualan'),
+            onTap: () {
+              Navigator.pop(scaffoldContext);
+              Navigator.push(
+                scaffoldContext,
+                MaterialPageRoute(builder: (_) => LaporanPenjualanPage()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.rate_review_sharp),
             title: const Text('Kelola Rating & Ulasan'),
-            onTap: () => _handleSelect('Kelola Rating & Ulasan'),
-          ),
+            onTap: () {
+                Navigator.pop(scaffoldContext);
+                Navigator.push(
+                scaffoldContext,
+                MaterialPageRoute(builder: (_) => KelolaUlasanPage()),
+                );
+              },
+            ),
           ListTile(
             leading: const Icon(Icons.location_on),
             title: const Text('Lokasi Customer'),
-            onTap: () => _handleSelect('Lokasi Customer'),
+            onTap: () {
+              Navigator.pop(scaffoldContext);
+              Navigator.push(
+                scaffoldContext,
+                MaterialPageRoute(builder: (_) => LacakOrderPage()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.qr_code_scanner),
             title: const Text('Verifikasi Pesanan'),
-            onTap: () => _handleSelect('Verifikasi Pesanan'),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => const VerifikasiPesananPage(),
+              ));
+            },
           ),
 
           // HANYA tampil jika UID adalah jATqcWGgqLcAB0PqbEY8oY65RI03
