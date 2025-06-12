@@ -1,244 +1,161 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:kopinang/widgets/drawer_admin.dart';
 
-class HomeAdmin extends StatefulWidget {
-  const HomeAdmin({Key? key}) : super(key: key);
+class DashboardAdminPage extends StatefulWidget {
+  const DashboardAdminPage({super.key});
 
   @override
-  State<HomeAdmin> createState() => _HomeAdminState();
+  State<DashboardAdminPage> createState() => _DashboardAdminPageState();
 }
 
-class _HomeAdminState extends State<HomeAdmin> {
-  int ordersToday = 0;
-  int totalUsers = 0;
-  String topProduct = '-';
-  int newReviews = 0;
-  List<Map<String, dynamic>> latestReviews = [];
-  bool isLoading = false;
+class _DashboardAdminPageState extends State<DashboardAdminPage> {
+  List<dynamic> orders = [];
+  int totalPemasukan = 0;
+  int totalPesanan = 0;
 
-  // Contoh data penjualan mingguan untuk grafik batang
-  List<BarChartGroupData> barChartData = [];
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
     super.initState();
-    fetchDashboardData();
+    fetchOrders();
   }
 
-  Future<int> fetchTotalCustomers() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('role', isEqualTo: 'customer')
-        .get();
-    return querySnapshot.docs.length;
-  }
+  Future<void> fetchOrders() async {
+    final response = await http.get(Uri.parse('http://192.168.1.7/api/Order'));
 
-  Future<void> fetchDashboardData() async {
-    setState(() {
-      isLoading = true;
-    });
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      final now = DateTime.now();
+      final todayOrders = data.where((order) {
+        final orderDate = DateTime.parse(order['createdAt']);
+        return orderDate.year == now.year &&
+            orderDate.month == now.month &&
+            orderDate.day == now.day &&
+            order['status'] == 'Selesai';
+      }).toList();
 
-    try {
-      final ordersRes = await http.get(Uri.parse('http://192.168.1.7/api/Order'));
-      final ulasanRes = await http.get(Uri.parse('http://192.168.1.7/api/Ulasan'));
-      final produkRes = await http.get(Uri.parse('http://192.168.1.7/api/Produk'));
-
-      if (ordersRes.statusCode == 200) {
-        final List<dynamic> orders = json.decode(ordersRes.body);
-        final today = DateTime.now();
-        ordersToday = orders.where((o) {
-          final date = DateTime.parse(o['createdAt']);
-          return date.year == today.year &&
-              date.month == today.month &&
-              date.day == today.day;
-        }).length;
-
-        // Generate data penjualan mingguan untuk grafik
-        barChartData = generateBarChartData(orders);
-      }
-
-      if (ulasanRes.statusCode == 200) {
-        final List<dynamic> ulasan = json.decode(ulasanRes.body);
-        latestReviews =
-            ulasan.reversed.take(5).map((e) => e as Map<String, dynamic>).toList();
-        newReviews = latestReviews.length;
-      }
-
-      if (produkRes.statusCode == 200) {
-        final List<dynamic> produk = json.decode(produkRes.body);
-        if (produk.isNotEmpty) {
-          topProduct = produk.first['namaProduk'];
-        }
-      }
-
-      totalUsers = await fetchTotalCustomers();
-    } catch (e) {
-      debugPrint('Error fetchDashboardData: $e');
-    }
-
-    setState(() {
-      isLoading = false;
-    });
-  }
-
-  // Fungsi untuk generate data grafik batang penjualan 7 hari terakhir
-  List<BarChartGroupData> generateBarChartData(List<dynamic> orders) {
-    final now = DateTime.now();
-    Map<int, int> salesByDay = {}; // key = weekday (1=Mon,..7=Sun), value = count
-
-    for (int i = 0; i < 7; i++) {
-      final day = now.subtract(Duration(days: i));
-      salesByDay[day.weekday] = 0;
-    }
-
-    for (var order in orders) {
-      final date = DateTime.parse(order['createdAt']);
-      final diff = now.difference(date).inDays;
-      if (diff < 7) {
-        salesByDay[date.weekday] = (salesByDay[date.weekday] ?? 0) + 1;
-      }
-    }
-
-    // Buat list BarChartGroupData dari Senin (1) sampai Minggu (7)
-    List<BarChartGroupData> barGroups = [];
-    for (int i = 1; i <= 7; i++) {
-      barGroups.add(
-        BarChartGroupData(
-          x: i,
-          barRods: [
-            BarChartRodData(
-              toY: salesByDay[i]?.toDouble() ?? 0,
-              color: Colors.blue,
-              width: 18,
-              borderRadius: BorderRadius.circular(6),
-            )
-          ],
-        ),
+      final pemasukan = todayOrders.fold<int>(
+        0,
+            (sum, order) => sum + (order['totalHarga'] as num).toInt(),
       );
+
+      setState(() {
+        orders = todayOrders;
+        totalPesanan = todayOrders.length;
+        totalPemasukan = pemasukan;
+      });
+    } else {
+      print('Failed to fetch orders');
     }
-    return barGroups;
   }
-
-  // Widget judul hari (Sen, Sel, Rab, ...)
-  Widget bottomTitles(double value, TitleMeta meta) {
-    const style = TextStyle(
-      color: Colors.black,
-      fontWeight: FontWeight.bold,
-      fontSize: 12,
-    );
-
-    const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-    String text = '';
-    if (value >= 1 && value <= 7) {
-      text = days[value.toInt() - 1];
-    }
-
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      space: 6,
-      child: Text(text, style: style),
-    );
-  }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFEAF4FB),
       appBar: AppBar(
-        title: const Text('Dashboard Admin KOPI NANG'),
-        backgroundColor: Colors.blue[800],
+        title: const Text('Dashboard Admin - KOPI NANG'),
+        backgroundColor: const Color(0xFF0D47A1),
+        foregroundColor: Colors.white,
       ),
-      body: RefreshIndicator(
-        onRefresh: fetchDashboardData,
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                children: [
-                  _buildCard("📦", "Pesanan Hari Ini", ordersToday.toString()),
-                  _buildCard("🧑", "User Terdaftar", totalUsers.toString()),
-                  _buildCard("☕", "Produk Terlaris", topProduct),
-                  _buildCard("🌟", "Ulasan Baru", newReviews.toString()),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Text("📊 Grafik Penjualan Mingguan",
-                  style:
-                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(
-                height: 250,
-                child: BarChart(
-                  BarChartData(
-                    maxY: 10,
-                    barGroups: barChartData,
-                    titlesData: FlTitlesData(
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          getTitlesWidget: bottomTitles,
-                        ),
-                      ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 28,
-                          interval: 1,
-                          getTitlesWidget: (value, meta) => Text(value.toInt().toString()),
-                        ),
-                      ),
-                    ),
-                    gridData: FlGridData(show: true),
-                    borderData: FlBorderData(show: false),
+      drawer: DrawerAdmin(scaffoldContext: context),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: DashboardCard(
+                    title: 'Total Pesanan Hari Ini',
+                    value: totalPesanan.toString(),
+                    icon: Icons.local_cafe,
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Text("📝 Ulasan Terbaru",
-                  style:
-                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              ...latestReviews.map((review) => Card(
-                child: ListTile(
-                  title: Text("Order ID: ${review['orderId']}"),
-                  subtitle: Text(
-                      "${review['review'] ?? '-'}\nBalasan: ${review['adminReply'] ?? '-'}"),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: DashboardCard(
+                    title: 'Total Pemasukan Hari Ini',
+                    value: currencyFormatter.format(totalPemasukan),
+                    icon: Icons.attach_money,
+                  ),
                 ),
-              )),
-            ],
-          ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Daftar Pesanan Hari Ini',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: orders.isEmpty
+                  ? const Center(child: Text('Belum ada pesanan hari ini'))
+                  : ListView.builder(
+                itemCount: orders.length,
+                itemBuilder: (context, index) {
+                  final order = orders[index];
+                  return Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.receipt_long),
+                      title: Text('Pesanan #${order['id']}'),
+                      subtitle: Text('Total: ${currencyFormatter.format(order['totalHarga'])}'),
+                      trailing: const Icon(Icons.check_circle, color: Colors.green),
+                    ),
+                  );
+                },
+              ),
+            )
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildCard(String icon, String label, String value) {
+class DashboardCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+
+  const DashboardCard({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
-      color: Colors.blue[50],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Row(
           children: [
-            Text(icon, style: const TextStyle(fontSize: 32)),
-            Text(label,
-                style:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(value, style: const TextStyle(fontSize: 20)),
+            Icon(icon, size: 40, color: const Color(0xFF0D47A1)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 4),
+                  Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            )
           ],
         ),
       ),

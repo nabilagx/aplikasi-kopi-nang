@@ -7,6 +7,7 @@ import 'package:kopinang/screens/setting_akun.dart';
 import 'package:kopinang/screens/lacak_order.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kopinang/screens/promo.dart';
+import 'package:kopinang/screens/home_admin.dart';
 import 'package:kopinang/screens/admin_order_page.dart';
 import 'package:kopinang/screens/laporan_penjualan.dart';
 import 'package:kopinang/screens/verifikasi_pesanan.dart';
@@ -69,7 +70,13 @@ class DrawerAdmin extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
-            onTap: () => _handleSelect('Dashboard'),
+            onTap: () {
+              Navigator.pop(scaffoldContext);
+              Navigator.push(
+                scaffoldContext,
+                MaterialPageRoute(builder: (_) => DashboardAdminPage()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.store),

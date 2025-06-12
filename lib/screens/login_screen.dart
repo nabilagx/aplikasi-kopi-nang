@@ -114,7 +114,7 @@ class LoginScreen extends StatelessWidget {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const HomeAdmin()),
+      MaterialPageRoute(builder: (_) => DashboardAdminPage()),
     );
   }
 

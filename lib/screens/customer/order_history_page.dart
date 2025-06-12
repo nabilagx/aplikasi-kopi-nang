@@ -85,6 +85,7 @@ class UlasanModel {
   final String userId;
   final int rating;
   final String review;
+  final String? adminReply;
 
   UlasanModel({
     required this.id,
@@ -92,6 +93,7 @@ class UlasanModel {
     required this.userId,
     required this.rating,
     required this.review,
+    this.adminReply,
   });
 
   factory UlasanModel.fromJson(Map<String, dynamic> json) {
@@ -101,9 +103,11 @@ class UlasanModel {
       userId: json['userId'],
       rating: json['rating'],
       review: json['review'],
+      adminReply: json['adminReply'],
     );
   }
 }
+
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({Key? key}) : super(key: key);
@@ -207,6 +211,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     });
   }
 
+
+
   void showUlasanDialog(int orderId, String userId) {
     int selectedRating = 5;
     TextEditingController reviewController = TextEditingController();
@@ -224,22 +230,23 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (index) {
                   final starIndex = index + 1;
-                  return IconButton(
-                    icon: Icon(
+                  return GestureDetector(
+                    onTap: () {
+                      setStateDialog(() {
+                        selectedRating = starIndex;
+                      });
+                    },
+                    child: Icon(
                       starIndex <= selectedRating
                           ? Icons.star
                           : Icons.star_border,
                       color: Colors.amber,
                       size: 32,
                     ),
-                    onPressed: () {
-                      setStateDialog(() {
-                        selectedRating = starIndex;
-                      });
-                    },
                   );
                 }),
               ),
+
               TextField(
                 controller: reviewController,
                 decoration: const InputDecoration(labelText: 'Tulis ulasan'),
@@ -350,7 +357,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                           ),
                         ),
                       ),
-                      if (order.status == "Selesai") ...[
+                      if (order.status == "Diproses" || order.status == "Selesai" || order.status == "Siap") ...[
                         const SizedBox(height: 8),
 
                         // Preview ulasan jika ada
@@ -360,26 +367,56 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                           ...ulasanList.map(
                                 (ulasan) => Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: List.generate(
-                                      5,
-                                          (i) => Icon(
-                                        i < ulasan.rating
-                                            ? Icons.star
-                                            : Icons.star_border,
-                                        size: 16,
-                                        color: Colors.amber,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: List.generate(
+                                          5,
+                                              (i) => Icon(
+                                            i < ulasan.rating
+                                                ? Icons.star
+                                                : Icons.star_border,
+                                            size: 16,
+                                            color: Colors.amber,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 2),
+                                      Text(ulasan.review),
+
+                                      // Tambahkan bagian ini
+                                      if (ulasan.adminReply != null && ulasan.adminReply!.isNotEmpty)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 8, left: 12),
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[100],
+                                            border: Border(left: BorderSide(color: Colors.blueAccent, width: 4)),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Balasan Admin:',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  color: Colors.blueGrey,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                ulasan.adminReply!,
+                                                style: const TextStyle(fontSize: 14),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(ulasan.review),
-                                ],
-                              ),
-                            ),
+
+                                ),
                           ),
                         ],
 
@@ -415,17 +452,23 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                             ),
 
                             ElevatedButton(
-                              onPressed: hasUlasan
-                                  ? null
-                                  : () {
+                              onPressed: (order.status == "Selesai" && !hasUlasan)
+                                  ? () {
                                 showUlasanDialog(order.id, order.userId);
-                              },
+                              }
+                                  : null, // tetap null jika belum bisa ditekan
                               style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                hasUlasan ? Colors.grey : null,
+                                backgroundColor: (order.status == "Selesai" && !hasUlasan)
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.grey.shade400, // agar tidak kelihatan seperti aktif
                               ),
-                              child: const Text("Beri Ulasan"),
+                              child: const Text(
+                                "Beri Ulasan",
+                                style: TextStyle(color: Colors.white), // pastikan warnanya kelihatan
+                              ),
                             ),
+
+
                           ],
                         ),
                       ],
@@ -440,3 +483,5 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 }
+
+

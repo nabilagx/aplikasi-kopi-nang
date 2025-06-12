@@ -55,13 +55,19 @@ dependencies:
   mobile_scanner: ^7.0.1
   shared_preferences: ^2.5.3
   fl_chart: ^1.0.0
-
-
-
-
-
-
+  midtrans_sdk: ^0.4.0
+  webview_flutter: ^4.2.2
+  url_launcher: ^6.2.4
   
+
+
+
+
+
+
+
+
+
 
 dev_dependencies:
   flutter_test:

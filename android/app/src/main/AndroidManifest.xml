@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.kopinang">
 
-    <!-- Permissions -->
+
+<!-- Permissions -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -19,7 +21,8 @@
         android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
         android:requestLegacyExternalStorage="true"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic,android:label">
 
         <uses-library android:name="org.apache.http.legacy" android:required="false"/>
 

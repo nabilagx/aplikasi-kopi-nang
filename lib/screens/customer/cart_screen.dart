@@ -5,14 +5,20 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'qris_view.dart';
 
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 
 import 'cart_provider.dart';
 import 'struk_screen.dart';
+
+
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -28,12 +34,14 @@ class _CartScreenState extends State<CartScreen> {
   bool _isCheckoutLoading = false;
 
   String? _selectedPaymentMethod;
-  String? _selectedEwallet;
 
-  final List<String> _paymentMethods = ['Bayar di Tempat', 'E-Wallet'];
-  final List<String> _ewalletOptions = ['Dana', 'OVO', 'GoPay', 'ShopeePay'];
+
+  final List<String> _paymentMethods = ['Bayar di Tempat', 'QRIS'];
+  //final List<String> _ewalletOptions = ['Dana', 'OVO', 'GoPay', 'ShopeePay'];
 
   final NumberFormat _currencyFormat = NumberFormat("#,##0", "id_ID");
+
+
 
   Future<void> _checkPromoCode(String code, num totalBelanja) async {
     setState(() {
@@ -65,6 +73,61 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
+  Future<void> createMidtransTransaction({
+    required int orderId,
+    required int totalHarga,
+    required String nama,
+    required String email,
+  }) async {
+    final body = {
+      "uid": FirebaseAuth.instance.currentUser!.uid,
+      "orderId": orderId,
+      "totalHarga": totalHarga,
+      "nama": nama,
+      "email": email,
+    };
+
+    print("GROSS AMOUNT: $totalHarga (${totalHarga.runtimeType})");
+
+
+    if (totalHarga <= 0) {
+      print("Error: Total harga tidak valid: $totalHarga");
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('http://192.168.1.7/api/order/payment/qris'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+
+    print('Response: ${response.statusCode} => ${response.body}');
+
+    print("STATUS CODE: ${response.statusCode}");
+    print("RESPONSE BODY:\n${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final snapUrl = data['actions'][0]['url']; // ✅ ambil dari actions
+      final orderId = data['order_id']; // ✅ sudah tersedia di response
+
+      if (snapUrl != null && orderId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => QrisWebViewPage(
+              url: snapUrl,
+              orderId: orderId,
+            ),
+          ),
+        );
+      } else {
+        throw Exception('URL atau Order ID tidak tersedia');
+      }
+    } else {
+      throw Exception('Gagal membuat transaksi Midtrans: ${response.body}');
+    }
+  }
 
 
 // Fungsi generate dan upload QR ke Imgur
@@ -114,13 +177,6 @@ class _CartScreenState extends State<CartScreen> {
       return;
     }
 
-    if (_selectedPaymentMethod == 'E-Wallet' && _selectedEwallet == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih jenis e-wallet terlebih dahulu')),
-      );
-      return;
-    }
-
     if (cart.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Keranjang kosong')),
@@ -147,7 +203,6 @@ class _CartScreenState extends State<CartScreen> {
       final position = await Geolocator.getCurrentPosition();
 
       final totalHarga = cart.totalHarga - _discount;
-      final paymentMethod = _selectedPaymentMethod == 'E-Wallet' ? _selectedEwallet! : _selectedPaymentMethod!;
 
       final List<Map<String, dynamic>> orderDetails = cart.items.map((item) {
         return {
@@ -161,8 +216,8 @@ class _CartScreenState extends State<CartScreen> {
         "userId": user.uid,
         "totalHarga": totalHarga.toInt(),
         "status": "Diproses",
-        "metodePembayaran": paymentMethod,
-        "buktiPembayaran": paymentMethod,
+        "metodePembayaran": _selectedPaymentMethod,
+        "buktiPembayaran": _selectedPaymentMethod,
         "latitude": position.latitude,
         "longitude": position.longitude,
         "createdAt": DateTime.now().toUtc().toIso8601String(),
@@ -180,6 +235,15 @@ class _CartScreenState extends State<CartScreen> {
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
         final orderId = data['id'].toString();
+
+        if (_selectedPaymentMethod == 'QRIS') {
+          await createMidtransTransaction(
+            orderId: int.parse(orderId),
+            totalHarga: totalHarga.toInt(),
+            nama: user.displayName ?? 'User',
+            email: user.email ?? 'user@example.com',
+          );
+        }
 
         // 2. Generate & upload QR ke Imgur dari orderId
         final qrUrl = await generateAndUploadQr(orderId);
@@ -213,10 +277,12 @@ class _CartScreenState extends State<CartScreen> {
           MaterialPageRoute(
             builder: (_) => StrukScreen(
               orderId: orderId,
-              metodePembayaran: paymentMethod,
+              metodePembayaran: _selectedPaymentMethod!,
               totalHarga: totalHarga.toInt(),
               items: itemsCopy,
               qrCodeUrl: qrUrl,  // Kalau mau tampilkan QR di struk
+
+
             ),
           ),
         );
@@ -234,6 +300,8 @@ class _CartScreenState extends State<CartScreen> {
       });
     }
   }
+
+
 
 
   @override
@@ -326,33 +394,12 @@ class _CartScreenState extends State<CartScreen> {
                 onChanged: (value) {
                   setState(() {
                     _selectedPaymentMethod = value;
-                    _selectedEwallet = null;
+
                   });
                 },
               ),
             ),
-            if (_selectedPaymentMethod == 'E-Wallet')
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'Pilih Jenis E-Wallet',
-                    border: OutlineInputBorder(),
-                  ),
-                  value: _selectedEwallet,
-                  items: _ewalletOptions
-                      .map((e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(e),
-                  ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedEwallet = value;
-                    });
-                  },
-                ),
-              ),
+
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(

@@ -64,7 +64,7 @@ class AuthWrapper extends StatelessWidget {
               if (userSnapshot.hasData && userSnapshot.data!.exists) {
                 final role = userSnapshot.data!['role'];
                 if (role == 'admin') {
-                  return const HomeAdmin();
+                  return DashboardAdminPage();
                 } else if (role == 'customer') {
                   return const HomeCustomer();
                 } else {

@@ -142,12 +142,7 @@ class _HomeCustomerState extends State<HomeCustomer> {
                 ),
                 Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.chat_bubble_outline),
-                      onPressed: () {
-                        // TODO: fitur chat
-                      },
-                    ),
+
                     IconButton(
                       icon: const Icon(Icons.shopping_cart),
                       onPressed: () {
