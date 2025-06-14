@@ -55,7 +55,7 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
   }
 
   Future<List<UlasanModel>> fetchUlasan() async {
-    final url = Uri.parse('http://192.168.1.7/api/Ulasan');
+    final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
@@ -66,7 +66,7 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
   }
 
   Future<void> updateAdminReply(int ulasanId, String reply) async {
-    final url = Uri.parse('http://192.168.1.7/api/Ulasan/$ulasanId');
+    final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan/$ulasanId');
     final body = json.encode({
       'adminReply': reply,
       //

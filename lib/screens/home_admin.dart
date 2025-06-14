@@ -29,7 +29,7 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
   }
 
   Future<void> fetchOrders() async {
-    final response = await http.get(Uri.parse('http://192.168.1.7/api/Order'));
+    final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);

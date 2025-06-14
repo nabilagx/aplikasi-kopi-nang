@@ -25,7 +25,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   Future<void> fetchOrder() async {
     try {
-      final url = 'http://192.168.1.7/api/Order/${widget.orderId}';
+      final url = 'https://kopinang-api-production.up.railway.app/api/Order/${widget.orderId}';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {

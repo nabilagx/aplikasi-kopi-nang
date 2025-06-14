@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+
+class AppUser {
+  final String uid;
+  final String nama;
+
+  AppUser({required this.uid, required this.nama});
+}
 
 class Produk {
   final int id;
@@ -105,17 +114,29 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
   bool _isLoading = true;
   bool _hasError = false;
 
+  Map<String, String> userIdToNama = {};
+
+
   final List<String> statusList = ['Diproses', 'Ditolak', 'Siap'];
 
   @override
   void initState() {
     super.initState();
-    fetchAllProduk().then((_) => fetchOrders());
+    loadData();
   }
+
+  Future<void> loadData() async {
+    await fetchAllProduk();
+    await fetchFirebaseUsers();
+    print('>> SELESAI FETCH USER, lanjut fetch orders...');
+    await fetchOrders();
+  }
+
+
 
   Future<void> fetchAllProduk() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.7/api/Produk'));
+      final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Produk'));
       if (response.statusCode == 200) {
         final List data = json.decode(response.body);
         allProduk = data.map((e) => Produk.fromJson(e)).toList();
@@ -127,6 +148,29 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
     }
   }
 
+  Future<void> fetchFirebaseUsers() async {
+    final snapshot = await FirebaseFirestore.instance.collection('users').get();
+    final users = snapshot.docs.map((doc) {
+      final data = doc.data();
+      final uid = doc.id;
+      final nama = data['name'] ?? 'Tidak diketahui';
+
+      print('>> Firebase User: $uid => $nama'); // Tambah ini
+
+      return AppUser(
+        uid: uid,
+        nama: nama,
+      );
+    }).toList();
+
+    setState(() {
+      userIdToNama = { for (var user in users) user.uid: user.nama };
+      print('>> userIdToNama map: $userIdToNama'); // Tambah ini
+    });
+  }
+
+
+
   Future<void> fetchOrders() async {
     setState(() {
       _isLoading = true;
@@ -134,7 +178,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.7/api/Order'));
+      final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -159,7 +203,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
   Future<void> updateStatus(int orderId, String newStatus) async {
     try {
       final response = await http.put(
-        Uri.parse('http://192.168.1.7/api/Order/$orderId/status'),
+        Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/$orderId/status'),
         headers: {'Content-Type': 'application/json-patch+json'},
         body: jsonEncode(newStatus),
       );
@@ -242,6 +286,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
                 children: [
                   Text('Order ID: ${order.id}'),
                   Text('User ID: ${order.userId}'),
+
                   Text('Total: Rp${order.totalHarga}'),
                   Text('Metode: ${order.metodePembayaran}'),
                   const SizedBox(height: 6),

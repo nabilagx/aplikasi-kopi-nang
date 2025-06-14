@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'qris_view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -43,6 +44,8 @@ class _CartScreenState extends State<CartScreen> {
 
 
 
+
+
   Future<void> _checkPromoCode(String code, num totalBelanja) async {
     setState(() {
       _isCheckingPromo = true;
@@ -50,21 +53,44 @@ class _CartScreenState extends State<CartScreen> {
     });
 
     try {
-      if (code.toLowerCase() == 'diskon10' && totalBelanja >= 50000) {
-        setState(() {
-          _discount = 10000;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Diskon Rp10.000 diterapkan')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kode promo tidak valid atau minimal belanja belum terpenuhi')),
-        );
+      final promoQuery = await FirebaseFirestore.instance
+          .collection('promos')
+          .where('kode', isEqualTo: code)
+          .where('aktif', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (promoQuery.docs.isEmpty) {
+        throw Exception("Kode promo tidak ditemukan atau tidak aktif");
       }
+
+      final promoDoc = promoQuery.docs.first;
+      final data = promoDoc.data();
+      final kuota = data['kuota'] ?? 0;
+      final minBelanja = data['minimal_belanja'] ?? 0;
+      final potongan = data['potongan'] ?? 0;
+
+      if (kuota <= 0) {
+        throw Exception("Promo sudah habis kuotanya");
+      }
+
+      if (totalBelanja < minBelanja) {
+        throw Exception("Belanja belum mencapai minimal Rp${minBelanja}");
+      }
+
+      // Semua valid → pakai promo
+      await promoDoc.reference.update({'kuota': kuota - 1});
+
+      setState(() {
+        _discount = potongan;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Promo berhasil! Diskon Rp$_discount diterapkan')),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saat validasi promo: $e')),
+        SnackBar(content: Text('Kode promo tidak valid: $e')),
       );
     } finally {
       setState(() {
@@ -72,6 +98,7 @@ class _CartScreenState extends State<CartScreen> {
       });
     }
   }
+
 
   Future<void> createMidtransTransaction({
     required int orderId,
@@ -96,7 +123,7 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     final response = await http.post(
-      Uri.parse('http://192.168.1.7/api/order/payment/qris'),
+      Uri.parse('https://kopinang-api-production.up.railway.app/api/order/payment/qris'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(body),
     );
@@ -227,7 +254,7 @@ class _CartScreenState extends State<CartScreen> {
 
       // 1. Buat order dulu tanpa QR code
       final response = await http.post(
-        Uri.parse('http://192.168.1.7/api/order'),
+        Uri.parse('https://kopinang-api-production.up.railway.app/api/order'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
@@ -252,7 +279,7 @@ class _CartScreenState extends State<CartScreen> {
         final updatePayload = {"qrCode": qrUrl, "updatedAt": DateTime.now().toUtc().toIso8601String()};
 
         final updateResponse = await http.put(
-          Uri.parse('http://192.168.1.7/api/order/$orderId/qrcode'),
+          Uri.parse('https://kopinang-api-production.up.railway.app/api/order/$orderId/qrcode'),
           headers: {'Content-Type': 'application/json'},
             body: jsonEncode({"qrCode": qrUrl}),
           // Tanpa properti, langsung string

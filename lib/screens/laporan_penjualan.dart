@@ -33,7 +33,7 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
   Future<void> fetchOrders() async {
     setState(() => loading = true);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.7/api/Order'));
+      final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {

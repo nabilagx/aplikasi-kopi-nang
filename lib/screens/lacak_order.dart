@@ -33,7 +33,7 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
 
   StreamSubscription<Position>? _positionStreamSubscription;
 
-  final String baseUrl = 'http://192.168.1.7/api/order';
+  final String baseUrl = 'https://kopinang-api-production.up.railway.app/api/order';
 
   @override
   void initState() {

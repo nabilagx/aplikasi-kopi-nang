@@ -22,7 +22,7 @@ class HomeCustomer extends StatefulWidget {
 class _HomeCustomerState extends State<HomeCustomer> {
   String searchQuery = '';
   String locationText = 'Mencari lokasi...';
-  final String apiBaseUrl = 'http://192.168.1.7/api/Produk';
+  final String apiBaseUrl = 'https://kopinang-api-production.up.railway.app/api/Produk';
 
   StreamSubscription<Position>? positionStream;
 

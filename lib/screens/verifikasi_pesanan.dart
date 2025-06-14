@@ -35,7 +35,7 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
 
   Future<void> verifikasiOrder(String orderId) async {
     try {
-      final url = Uri.parse('http://192.168.1.7/api/Order/$orderId/verifikasi');
+      final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/$orderId/verifikasi');
       final response = await http.put(
         url,
         headers: {'Content-Type': 'application/json'},

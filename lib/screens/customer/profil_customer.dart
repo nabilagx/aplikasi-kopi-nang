@@ -28,7 +28,10 @@ class ProfilCustomer extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Profil")),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        automaticallyImplyLeading: false,
+      ),
       bottomNavigationBar: const CustomerBottomNav(currentIndex: 2),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

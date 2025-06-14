@@ -26,7 +26,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
   File? _imageFile;
   bool _loading = false;
 
-  final String apiBaseUrl = 'http://192.168.1.7/api/Produk';
+  final String apiBaseUrl = 'https://kopinang-api-production.up.railway.app/api/Produk';
 
   @override
   void dispose() {

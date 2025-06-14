@@ -123,7 +123,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   Map<int, List<UlasanModel>> ulasanPerOrder = {};
 
   Future<List<OrderModel>> fetchOrdersByUid(String uid) async {
-    final url = Uri.parse('http://192.168.1.7/api/Order/user/$uid');
+    final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/user/$uid');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -141,7 +141,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   Future<List<UlasanModel>> fetchUlasanByOrderId(int orderId) async {
-    final url = Uri.parse('http://192.168.1.7/api/Ulasan/order/$orderId');
+    final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan/order/$orderId');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
@@ -170,7 +170,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     required String review,
   }) async {
     final nowIso = DateTime.now().toUtc().toIso8601String();
-    final url = Uri.parse('http://192.168.1.7/api/Ulasan');
+    final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan');
     final body = json.encode({
       'id': 0,
       'orderId': orderId,
@@ -310,7 +310,10 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('Riwayat Pesanan')),
+      appBar: AppBar(
+        title: const Text('Riwayat Pesanan'),
+        automaticallyImplyLeading: false,
+      ),
       bottomNavigationBar: const CustomerBottomNav(currentIndex: 1),
       body: FutureBuilder<List<OrderModel>>(
         future: futureOrders,

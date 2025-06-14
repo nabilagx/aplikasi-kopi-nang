@@ -27,7 +27,7 @@ class _QrisWebViewPageState extends State<QrisWebViewPage> {
 
   Future<void> checkStatusPembayaran() async {
     final response = await http.get(
-        Uri.parse('http://192.168.1.7/api/order/${widget.orderId}'));
+        Uri.parse('https://kopinang-api-production.up.railway.app/api/order/${widget.orderId}'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final status = data['status'];
