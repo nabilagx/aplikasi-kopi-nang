@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'qris_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -38,13 +39,8 @@ class _CartScreenState extends State<CartScreen> {
 
 
   final List<String> _paymentMethods = ['Bayar di Tempat', 'QRIS'];
-  //final List<String> _ewalletOptions = ['Dana', 'OVO', 'GoPay', 'ShopeePay'];
 
   final NumberFormat _currencyFormat = NumberFormat("#,##0", "id_ID");
-
-
-
-
 
   Future<void> _checkPromoCode(String code, num totalBelanja) async {
     setState(() {
@@ -85,13 +81,21 @@ class _CartScreenState extends State<CartScreen> {
         _discount = potongan;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Promo berhasil! Diskon Rp$_discount diterapkan')),
+      showKopiNangAlert(
+        context,
+        "Promo Berhasil",
+        "Diskon Rp$_discount diterapkan.",
+        type: 'success',
       );
+
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kode promo tidak valid: $e')),
+      showKopiNangAlert(
+        context,
+        "Kode Promo Tidak Valid",
+        "Terjadi kesalahan: $e",
+        type: 'error',
       );
+
     } finally {
       setState(() {
         _isCheckingPromo = false;
@@ -198,8 +202,11 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<void> _onCheckout(CartProvider cart) async {
     if (_selectedPaymentMethod == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih metode pembayaran terlebih dahulu')),
+      showKopiNangAlert(
+        context,
+        "Metode Pembayaran",
+        "Silakan pilih metode pembayaran terlebih dahulu.",
+        type: 'warning',
       );
       return;
     }
@@ -307,7 +314,7 @@ class _CartScreenState extends State<CartScreen> {
               metodePembayaran: _selectedPaymentMethod!,
               totalHarga: totalHarga.toInt(),
               items: itemsCopy,
-              qrCodeUrl: qrUrl,  // Kalau mau tampilkan QR di struk
+              qrCodeUrl: qrUrl,
 
 
             ),
@@ -318,8 +325,11 @@ class _CartScreenState extends State<CartScreen> {
         throw Exception('Gagal membuat pesanan: ${error.toString()}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saat checkout: $e')),
+      showKopiNangAlert(
+        context,
+        "Gagal Checkout",
+        "Terjadi kesalahan: $e",
+        type: 'error',
       );
     } finally {
       setState(() {
@@ -327,9 +337,6 @@ class _CartScreenState extends State<CartScreen> {
       });
     }
   }
-
-
-
 
   @override
   void dispose() {
@@ -344,7 +351,11 @@ class _CartScreenState extends State<CartScreen> {
     final displayTotal = total > 0 ? total : 0;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Keranjang")),
+      appBar: AppBar(
+        title: const Text("Keranjang"),
+        backgroundColor: const Color(0xFF0D47A1),
+        foregroundColor: Colors.white,
+      ),
       body: cart.items.isEmpty
           ? const Center(child: Text('Keranjang kosong'))
           : SingleChildScrollView(
@@ -356,44 +367,93 @@ class _CartScreenState extends State<CartScreen> {
               itemCount: cart.items.length,
               itemBuilder: (context, index) {
                 final item = cart.items[index];
-                return ListTile(
-                  leading: Image.network(
-                    item['gambar'],
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  title: Text(item['nama']),
-                  subtitle: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () => cart.decreaseQty(index),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(12),
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        item['gambar'],
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
                       ),
-                      Text('${item['qty']}'),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => cart.increaseQty(index),
-                      ),
-                    ],
+                    ),
+                    title: Text(item['nama'],
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: () => cart.decreaseQty(index),
+                        ),
+                        Text('${item['qty']}', style: const TextStyle(
+                            fontSize: 16)),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          onPressed: () => cart.increaseQty(index),
+                        ),
+                      ],
+                    ),
+                    trailing: Text(
+                      'Rp${_currencyFormat.format(
+                          item['harga'] * item['qty'])}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  trailing: Text('Rp${_currencyFormat.format(item['harga'] * item['qty'])}'),
                 );
               },
             ),
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 controller: _promoController,
                 decoration: InputDecoration(
                   labelText: 'Kode Promo',
+                  labelStyle: TextStyle(
+                    color: Colors.blue.shade800,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  filled: true,
+                  fillColor: Colors.blue.shade50,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  prefixIcon: Icon(Icons.card_giftcard, color: Colors.blue.shade400),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue.shade200),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue.shade200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue.shade600, width: 1.8),
+                  ),
                   suffixIcon: _isCheckingPromo
-                      ? const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(),
+                      ? Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.blue.shade600,
+                      ),
+                    ),
                   )
                       : IconButton(
-                    icon: const Icon(Icons.check),
+                    icon: Icon(
+                      Icons.check_circle_outline,
+                      color: Colors.blue.shade600,
+                    ),
                     onPressed: () {
                       final code = _promoController.text.trim();
                       if (code.isNotEmpty) {
@@ -404,42 +464,99 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Pilih Metode Pembayaran',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'Metode Pembayaran',
+                  prefixIcon: Icon(Icons.payment, color: Colors.blue.shade400),
+                  labelStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blue.shade700,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  filled: true,
+                  fillColor: Colors.blue.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue.shade200),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue.shade200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
                 ),
+                icon: Icon(Icons.arrow_drop_down_rounded, color: Colors.blue),
+                dropdownColor: Colors.blue.shade50,
                 value: _selectedPaymentMethod,
-                items: _paymentMethods
-                    .map((method) => DropdownMenuItem(
-                  value: method,
-                  child: Text(method),
-                ))
-                    .toList(),
+                items: _paymentMethods.map((method) {
+                  return DropdownMenuItem<String>(
+                    value: method,
+                    child: Text(
+                      method,
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedPaymentMethod = value;
-
+                    _selectedPaymentMethod = value!;
                   });
                 },
               ),
             ),
 
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Total: Rp${_currencyFormat.format(displayTotal)}',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total:', style: TextStyle(fontSize: 18)),
+                  Text(
+                    'Rp${_currencyFormat.format(displayTotal)}',
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ),
-            ElevatedButton(
-              onPressed: _isCheckoutLoading ? null : () => _onCheckout(cart),
-              child: _isCheckoutLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Checkout'),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _isCheckoutLoading ? null : () =>
+                      _onCheckout(cart),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0D47A1),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isCheckoutLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                    'Checkout',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

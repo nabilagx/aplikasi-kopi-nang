@@ -195,38 +195,47 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
                 ),
                 if (!readOnly) ...[
                   ListTile(
-                    title: const Text('Diskon Persentase'),
+                    title: const Text('Diskon Persentase', style: TextStyle(color: Color(0xFF0D47A1))),
                     leading: Radio<String>(
                       value: 'persentase',
                       groupValue: _tipeDiskon,
                       onChanged: (value) => setStateDialog(() => _tipeDiskon = value!),
+                      activeColor: Color(0xFF0D47A1),
                     ),
                   ),
                   ListTile(
-                    title: const Text('Diskon Nominal'),
+                    title: const Text('Diskon Nominal', style: TextStyle(color: Color(0xFF0D47A1))),
                     leading: Radio<String>(
                       value: 'nominal',
                       groupValue: _tipeDiskon,
                       onChanged: (value) => setStateDialog(() => _tipeDiskon = value!),
+                      activeColor: Color(0xFF0D47A1),
                     ),
                   ),
                   if (_tipeDiskon == 'persentase')
                     TextField(
                       controller: _potonganMaksController,
-                      decoration: InputDecoration(labelText: 'Potongan Maks'),
+                      decoration: const InputDecoration(
+                        labelText: 'Potongan Maks',
+                        labelStyle: TextStyle(color: Color(0xFF0D47A1)),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFF0D47A1)),
+                        ),
+                      ),
                       keyboardType: TextInputType.number,
                     ),
                   SwitchListTile(
-                    title: Text('Promo Aktif'),
+                    title: const Text('Promo Aktif', style: TextStyle(color: Color(0xFF0D47A1))),
                     value: _isAktif,
                     onChanged: readOnly ? null : (val) => setStateDialog(() => _isAktif = val),
+                    activeColor: Color(0xFF0D47A1),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   _imageFile != null
                       ? Image.file(_imageFile!, height: 150)
                       : promoDoc != null
                       ? Image.network((promoDoc.data() as Map<String, dynamic>)['gambar'], height: 150)
-                      : Text('Belum ada gambar'),
+                      : const Text('Belum ada gambar', style: TextStyle(color: Color(0xFF0D47A1))),
                   ElevatedButton.icon(
                     onPressed: () async {
                       final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -234,10 +243,19 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
                         setStateDialog(() => _imageFile = File(pickedFile.path));
                       }
                     },
-                    icon: Icon(Icons.image),
-                    label: Text('Pilih Gambar'),
+                    icon: const Icon(Icons.image, color: Colors.white),
+                    label: const Text('Pilih Gambar', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D47A1),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
-                  SizedBox(height: 10),
+
+                  const SizedBox(height: 10),
+                  if (_isUploading) const CircularProgressIndicator(),
                 ],
                 if (_isUploading) CircularProgressIndicator(),
               ],
@@ -255,8 +273,19 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
             if (!readOnly)
               ElevatedButton(
                 onPressed: _isUploading ? null : _submitPromo,
-                child: Text(_editingDocId == null ? 'Simpan' : 'Update'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[900],
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  _editingDocId == null ? 'Simpan' : 'Update',
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
+
             if (readOnly)
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -342,17 +371,31 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFEAF4FB),
+      appBar: AppBar(
+        backgroundColor: Color(0xFF0D47A1),
+        title: Text('Kelola Promo', style: TextStyle(color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
       drawer: DrawerAdmin(scaffoldContext: context),
-      appBar: AppBar(title: Text('Kelola Promo')),
+
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
             ElevatedButton.icon(
               onPressed: () => _showPromoForm(),
-              icon: Icon(Icons.add),
-              label: Text('Tambah Promo'),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('Tambah Promo', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[900], // Warna navy gelap
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
             ),
+
             SizedBox(height: 20),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
@@ -372,6 +415,9 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
                       final data = promo.data() as Map<String, dynamic>;
 
                       return Card(
+                        color: Colors.white,
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         child: ListTile(
                           onTap: () => _showPromoOptions(promo),
                           leading: Image.network(data['gambar'], width: 50, height: 50, fit: BoxFit.cover),

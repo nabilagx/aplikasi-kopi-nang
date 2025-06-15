@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class DashboardAdminPage extends StatefulWidget {
   const DashboardAdminPage({super.key});
@@ -62,7 +63,7 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEAF4FB),
       appBar: AppBar(
-        title: const Text('Dashboard Admin - KOPI NANG'),
+        title: const Text('Dashboard Admin'),
         backgroundColor: const Color(0xFF0D47A1),
         foregroundColor: Colors.white,
       ),

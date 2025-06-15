@@ -108,6 +108,8 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Verifikasi Pesanan'),
+        backgroundColor: const Color(0xFF0D47A1),
+        foregroundColor: Colors.white,
       ),
       drawer: DrawerAdmin(
         onSelectMenu: (menu) {
@@ -127,7 +129,7 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
                 width: 250,
                 height: 250,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.greenAccent, width: 4),
+                  border: Border.all(color: Color(0xFF0D47A1), width: 4),
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
@@ -144,7 +146,7 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
               alignment: Alignment.bottomCenter,
               child: Container(
                 padding: const EdgeInsets.all(20),
-                color: Colors.black54,
+                color: const Color(0xFF0D47A1).withOpacity(0.9),
                 child: const Text(
                   'Arahkan kamera ke QR Code pesanan',
                   style: TextStyle(color: Colors.white, fontSize: 16),

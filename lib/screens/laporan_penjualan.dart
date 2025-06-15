@@ -199,12 +199,19 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFEAF4FB), // biru soft
       appBar: AppBar(
         title: const Text('Laporan Penjualan'),
-
+        backgroundColor: const Color(0xFF0D47A1), // biru navy gelap
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.filter_alt),
+            icon: const Icon(Icons.filter_alt, color: Colors.white),
             onSelected: (value) {
               switch (value) {
                 case 'tanggal':
@@ -229,12 +236,12 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             tooltip: 'Refresh Data',
             onPressed: fetchOrders,
           ),
           IconButton(
-            icon: const Icon(Icons.file_download),
+            icon: const Icon(Icons.file_download, color: Colors.white),
             tooltip: 'Export Excel',
             onPressed: exportToExcel,
           ),
@@ -249,19 +256,37 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : filteredOrders.isEmpty
-          ? const Center(child: Text('Tidak ada data pesanan'))
+          ? const Center(
+        child: Text(
+          'Tidak ada data pesanan',
+          style: TextStyle(color: Colors.black54),
+        ),
+      )
           : ListView.builder(
         itemCount: filteredOrders.length,
         itemBuilder: (context, index) {
           final order = filteredOrders[index];
-          final createdAt = DateTime.parse(order['createdAt'].toString());
+          final createdAt =
+          DateTime.parse(order['createdAt'].toString());
           return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: ListTile(
-              title: Text('Order ID: ${order['id']}'),
-              subtitle: Column(
+            color: Colors.white,
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.symmetric(
+                horizontal: 12, vertical: 6),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text('Order ID: ${order['id']}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF0D47A1))),
+                  const SizedBox(height: 4),
                   Text('User ID: ${order['userId']}'),
                   Text('Total Harga: Rp${order['totalHarga']}'),
                   Text('Status: ${order['status']}'),

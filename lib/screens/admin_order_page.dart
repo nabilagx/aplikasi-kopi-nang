@@ -236,22 +236,37 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return  Scaffold(
-        appBar: AppBar(title: Text('Kelola Pesanan')),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Kelola Pesanan'),
+          backgroundColor: const Color(0xFF0D47A1),
+          foregroundColor: Colors.white,
+        ),
+        backgroundColor: const Color(0xFFEAF4FB),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_hasError) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Kelola Pesanan')),
+        appBar: AppBar(
+          title: const Text('Kelola Pesanan'),
+          backgroundColor: const Color(0xFF0D47A1),
+          foregroundColor: Colors.white,
+        ),
+        backgroundColor: const Color(0xFFEAF4FB),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Gagal memuat data pesanan'),
+              const Text('Gagal memuat data pesanan',
+                  style: TextStyle(color: Colors.black87)),
               const SizedBox(height: 10),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0D47A1),
+                  foregroundColor: Colors.white,
+                ),
                 onPressed: () {
                   fetchAllProduk().then((_) => fetchOrders());
                 },
@@ -266,7 +281,10 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kelola Pesanan'),
+        backgroundColor: const Color(0xFF0D47A1),
+        foregroundColor: Colors.white,
       ),
+      backgroundColor: const Color(0xFFEAF4FB),
       drawer: DrawerAdmin(
         onSelectMenu: (menu) {
           Navigator.pop(context);
@@ -278,44 +296,58 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
         itemBuilder: (context, index) {
           final order = orders[index];
           return Card(
-            margin: const EdgeInsets.all(10),
+            color: Colors.white,
+            shadowColor: Colors.black26,
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order ID: ${order.id}'),
-                  Text('User ID: ${order.userId}'),
-
-                  Text('Total: Rp${order.totalHarga}'),
-                  Text('Metode: ${order.metodePembayaran}'),
+                  Text('Order ID: ${order.id}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black87)),
+                  Text('User: ${userIdToNama[order.userId] ?? order.userId}',
+                      style: const TextStyle(color: Colors.black54)),
+                  Text('Total: Rp${order.totalHarga}',
+                      style: const TextStyle(color: Colors.black87)),
+                  Text('Metode: ${order.metodePembayaran}',
+                      style: const TextStyle(color: Colors.black54)),
                   const SizedBox(height: 6),
                   const Text('Detail Produk:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black87)),
                   ...order.orderDetails.map((detail) {
                     final namaProduk = getNamaProdukById(detail.produkId);
-                    return Text('- $namaProduk x${detail.jumlah}');
+                    return Text('- $namaProduk x${detail.jumlah}',
+                        style: const TextStyle(color: Colors.black87));
                   }).toList(),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Status:'),
+                      const Text('Status:',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       order.status.toLowerCase() == 'selesai'
-                          ? Text(
+                          ? const Text(
                         'Selesai',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green),
                       )
                           : DropdownButton<String>(
-                        value: statusList.contains(order.status) ? order.status : null,
+                        value: statusList.contains(order.status)
+                            ? order.status
+                            : null,
                         onChanged: (String? newValue) {
                           if (newValue != null && newValue != order.status) {
                             updateStatus(order.id, newValue);
                           }
                         },
+                        dropdownColor: Colors.white,
+                        style: const TextStyle(color: Colors.black),
+                        iconEnabledColor: const Color(0xFF0D47A1),
                         items: statusList.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -325,7 +357,6 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
                       ),
                     ],
                   ),
-
                 ],
               ),
             ),
@@ -334,4 +365,5 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
       ),
     );
   }
+
 }

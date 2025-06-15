@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../widgets/customer_bottom_nav.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class OrderDetailModel {
   final int id;
@@ -185,8 +186,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
     final response = await http.post(url, headers: headers, body: body);
     if (response.statusCode == 200 || response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ulasan berhasil dikirim')),
+      showKopiNangAlert(
+        context,
+        "Ulasan Berhasil",
+        "Ulasan berhasil dikirim",
+        type: 'success',
       );
 
       // Refresh ulasan untuk order tersebut
@@ -196,8 +200,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         futureOrders = getUserOrders(); // Jika mau refresh list pesanan juga
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengirim ulasan: ${response.statusCode}')),
+      showKopiNangAlert(
+        context,
+        "Gagal",
+        "Gagak mengirim ulasan: ${response.statusCode}",
+        type: 'error',
       );
     }
   }
@@ -220,88 +227,159 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
-          title: const Text("Beri Ulasan"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("Rating:"),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) {
-                  final starIndex = index + 1;
-                  return GestureDetector(
-                    onTap: () {
-                      setStateDialog(() {
-                        selectedRating = starIndex;
-                      });
-                    },
-                    child: Icon(
-                      starIndex <= selectedRating
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: Colors.amber,
-                      size: 32,
-                    ),
-                  );
-                }),
-              ),
-
-              TextField(
-                controller: reviewController,
-                decoration: const InputDecoration(labelText: 'Tulis ulasan'),
-                maxLines: 3,
-              ),
-            ],
+      builder: (context, setStateDialog) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Center(
+          child: Text(
+            "Beri Ulasan",
+            style: TextStyle(
+              color: Color(0xFF0D47A1),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                if (reviewController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ulasan tidak boleh kosong')),
-                  );
-                  return;
-                }
-
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Konfirmasi'),
-                    content: const Text('Apakah kamu yakin ingin mengirim ulasan?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Batal'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Ya'),
-                      ),
-                    ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Rating:",
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                final starIndex = index + 1;
+                return GestureDetector(
+                  onTap: () {
+                    setStateDialog(() {
+                      selectedRating = starIndex;
+                    });
+                  },
+                  child: Icon(
+                    starIndex <= selectedRating
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: Colors.amber,
+                    size: 32,
                   ),
                 );
-
-                if (confirm != true) return;
-
-                Navigator.pop(context); // tutup dialog
-
-                await kirimUlasan(
-                  orderId: orderId,
-                  userId: userId,
-                  rating: selectedRating,
-                  review: reviewController.text,
-                );
-              },
-              child: const Text("Kirim"),
+              }),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reviewController,
+              decoration: InputDecoration(
+                labelText: 'Tulis ulasan',
+                labelStyle: const TextStyle(color: Color(0xFF0D47A1)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF0D47A1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF0D47A1), width: 2),
+                ),
+              ),
+              maxLines: 3,
             ),
           ],
         ),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        actions: [
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.grey[700],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              side: const BorderSide(color: Colors.grey),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0D47A1),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            onPressed: () async {
+              if (reviewController.text.trim().isEmpty) {
+                showKopiNangAlert(
+                  context,
+                  "Peringatan",
+                  "Ulasan tidak boleh kosong",
+                  type: 'warning',
+                );
+                return;
+              }
+
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: const Center(
+                    child: Text(
+                      'Konfirmasi',
+                      style: TextStyle(
+                        color: Color(0xFF0D47A1),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  content: const Text('Apakah kamu yakin ingin mengirim ulasan?'),
+                  actionsAlignment: MainAxisAlignment.spaceBetween,
+                  actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  actions: [
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey[700],
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        side: const BorderSide(color: Colors.grey),
+                      ),
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Batal'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF0D47A1),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Ya'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm != true) return;
+
+              Navigator.pop(context); // tutup dialog utama
+
+              await kirimUlasan(
+                orderId: orderId,
+                userId: userId,
+                rating: selectedRating,
+                review: reviewController.text,
+              );
+
+              showKopiNangAlert(
+                context,
+                "Ulasan Dikirim",
+                "Ulasan berhasil dikirim",
+                type: 'success',
+              );
+
+            },
+            child: const Text("Kirim"),
+          ),
+        ],
       ),
+      )
     );
   }
 
@@ -311,8 +389,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: const Color(0xFF0D47A1),
+        foregroundColor: Colors.white,
         title: const Text('Riwayat Pesanan'),
         automaticallyImplyLeading: false,
+        centerTitle: true,
       ),
       bottomNavigationBar: const CustomerBottomNav(currentIndex: 1),
       body: FutureBuilder<List<OrderModel>>(
@@ -336,6 +417,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
               final hasUlasan = ulasanList.isNotEmpty;
 
               return Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Color(0xFF0D47A1), width: 0),
+                ),
+                elevation: 3,
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -344,8 +431,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                     children: [
                       Text(
                         "Pesanan #${order.id} - ${order.status}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0D47A1),
+                        ),
                       ),
+
                       const SizedBox(height: 4),
                       Text("Total: Rp${order.totalHarga}"),
                       Text("Metode: ${order.metodePembayaran}"),
@@ -394,8 +485,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                           margin: const EdgeInsets.only(top: 8, left: 12),
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: Colors.grey[100],
-                                            border: Border(left: BorderSide(color: Colors.blueAccent, width: 4)),
+                                            color: const Color(0xFFE3F2FD), // biru muda dari palet biru
+                                            border: const Border(
+                                              left: BorderSide(color: Color(0xFF0D47A1), width: 4),
+                                            ),
+                                            borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,49 +521,92 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             ElevatedButton.icon(
-                              icon: const Icon(Icons.qr_code),
-                              label: const Text("Lihat QR Code"),
+                              icon: const Icon(Icons.qr_code, color: Colors.white),
+                              label: const Text(
+                                "Lihat QR Code",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0D47A1),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
                               onPressed: () {
                                 showDialog(
                                   context: context,
                                   builder: (_) => AlertDialog(
-                                    title: const Text("QR Code Pesanan"),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    backgroundColor: Colors.white,
+                                    contentPadding: const EdgeInsets.all(20),
                                     content: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        if (order.qrCode != null)
-                                          Image.network(order.qrCode!)
-                                        else
-                                          const Text("QR Code tidak tersedia."),
+                                        Image.asset(
+                                          'assets/images/logo.png',
+                                          height: 60,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          "Tunjukkan QR Code ini ke kasir",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0D47A1),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[100],
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: order.qrCode != null
+                                              ? Image.network(
+                                            order.qrCode!,
+                                            height: 180,
+                                            width: 180,
+                                          )
+                                              : const Text("QR Code tidak tersedia."),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton.icon(
+                                            icon: const Icon(Icons.check, color: Colors.white),
+                                            label: const Text("Tutup", style: TextStyle(color: Colors.white)),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF0D47A1),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                            ),
+                                            onPressed: () => Navigator.pop(context),
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text("Tutup"),
-                                      ),
-                                    ],
                                   ),
                                 );
                               },
                             ),
 
+
                             ElevatedButton(
                               onPressed: (order.status == "Selesai" && !hasUlasan)
-                                  ? () {
-                                showUlasanDialog(order.id, order.userId);
-                              }
-                                  : null, // tetap null jika belum bisa ditekan
+                                  ? () => showUlasanDialog(order.id, order.userId)
+                                  : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: (order.status == "Selesai" && !hasUlasan)
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.grey.shade400, // agar tidak kelihatan seperti aktif
+                                    ? const Color(0xFF0D47A1)
+                                    : Colors.grey.shade400,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
-                              child: const Text(
-                                "Beri Ulasan",
-                                style: TextStyle(color: Colors.white), // pastikan warnanya kelihatan
-                              ),
+                              child: const Text("Beri Ulasan", style: TextStyle(color: Colors.white)),
                             ),
+
 
 
                           ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../widgets/customer_bottom_nav.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class OrderDetailPage extends StatefulWidget {
   final int orderId;
@@ -37,17 +38,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         setState(() {
           isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Gagal memuat detail order")),
-        );
+        showKopiNangAlert(context, "Gagal", "Gagal memuat detail order", type: 'error');
       }
     } catch (e) {
       setState(() {
         isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      showKopiNangAlert(context, "Error", "Error: $e", type: 'error');
     }
   }
 

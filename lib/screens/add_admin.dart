@@ -173,14 +173,24 @@ class _AddAdminPageState extends State<AddAdminPage> {
     if (!isSuperAdmin) {
       return Scaffold(
         drawer: DrawerAdmin(scaffoldContext: context),
-        appBar: AppBar(title: Text('Kelola Admin')),
+        backgroundColor: Color(0xFFEAF4FB), // Biru soft
+        appBar: AppBar(
+          backgroundColor: Color(0xFF0D47A1), // Navy gelap
+          title: Text('Kelola Admin'),
+          foregroundColor: Colors.white,
+        ),
         body: Center(child: Text('Anda bukan super admin')),
       );
     }
 
     return Scaffold(
       drawer: DrawerAdmin(scaffoldContext: context),
-      appBar: AppBar(title: Text('Kelola Admin')),
+      backgroundColor: Color(0xFFEAF4FB), // Biru soft
+      appBar: AppBar(
+        backgroundColor: Color(0xFF0D47A1), // Navy gelap
+        title: Text('Kelola Admin'),
+        foregroundColor: Colors.white,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -189,6 +199,8 @@ class _AddAdminPageState extends State<AddAdminPage> {
               controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'Email admin baru',
+                filled: true,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.emailAddress,
@@ -199,6 +211,8 @@ class _AddAdminPageState extends State<AddAdminPage> {
               obscureText: _obscurePassword,
               decoration: InputDecoration(
                 labelText: 'Password',
+                filled: true,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -212,13 +226,21 @@ class _AddAdminPageState extends State<AddAdminPage> {
                 ),
               ),
             ),
-
             SizedBox(height: 8),
             ElevatedButton(
               onPressed: _addAdmin,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF0D47A1), // Navy gelap
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                textStyle: TextStyle(fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               child: Text('Tambah Admin'),
             ),
-            Divider(height: 32),
+            Divider(height: 32, color: Colors.grey[400]),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore
@@ -252,21 +274,31 @@ class _AddAdminPageState extends State<AddAdminPage> {
 
                       return Card(
                         margin: EdgeInsets.symmetric(vertical: 6),
+                        color: Colors.white,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: ListTile(
-                          title: Text(name.isNotEmpty ? name : '-'),
+                          title: Text(
+                            name.isNotEmpty ? name : '-',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           subtitle: Text(email),
                           trailing: isSuperAdmin
                               ? Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.edit),
+                                icon: Icon(Icons.edit,
+                                    color: Color(0xFF0D47A1)),
                                 tooltip: 'Edit Nama',
                                 onPressed: () =>
                                     _showEditNameDialog(docId, name),
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
+                                icon: Icon(Icons.delete,
+                                    color: Colors.red.shade700),
                                 tooltip: 'Hapus Admin',
                                 onPressed: () {
                                   if (uid == superAdminUid) {
@@ -317,3 +349,4 @@ class _AddAdminPageState extends State<AddAdminPage> {
     );
   }
 }
+

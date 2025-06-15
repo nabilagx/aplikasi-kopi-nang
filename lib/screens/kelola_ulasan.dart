@@ -69,7 +69,6 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
     final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan/$ulasanId');
     final body = json.encode({
       'adminReply': reply,
-      //
     });
 
     final headers = {'Content-Type': 'application/json'};
@@ -91,8 +90,16 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
 
   @override
   Widget build(BuildContext context) {
+    const Color navy = Color(0xFF0D47A1);
+    const Color softBlue = Color(0xFFEAF4FB);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Kelola Ulasan')),
+      backgroundColor: softBlue,
+      appBar: AppBar(
+        title: const Text('Kelola Ulasan & Rating'),
+        backgroundColor: navy,
+        foregroundColor: Colors.white,
+      ),
       drawer: DrawerAdmin(scaffoldContext: context),
       body: FutureBuilder<List<UlasanModel>>(
         future: futureUlasan,
@@ -116,14 +123,18 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
               TextEditingController(text: ulasan.adminReply ?? '');
 
               return Card(
-                margin: const EdgeInsets.all(8),
+                color: Colors.white,
+                margin: const EdgeInsets.all(10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 3,
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Order ID: ${ulasan.orderId}"),
-                      Text("User ID: ${ulasan.userId}"),
+                      Text("Order ID: ${ulasan.orderId}", style: TextStyle(color: navy)),
+                      Text("User ID: ${ulasan.userId}", style: TextStyle(color: navy)),
+                      const SizedBox(height: 6),
                       Row(
                         children: List.generate(
                           5,
@@ -133,28 +144,34 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text("Review: ${ulasan.review ?? '-'}"),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       TextField(
                         controller: replyController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Balasan Admin',
                           border: OutlineInputBorder(),
+                          filled: true,
+                          fillColor: softBlue,
                         ),
                         maxLines: 3,
-                        enabled: ulasan.adminReply == null || ulasan.adminReply!.isEmpty, // hanya aktif jika belum dibalas
+                        enabled: ulasan.adminReply == null || ulasan.adminReply!.isEmpty,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Align(
                         alignment: Alignment.centerRight,
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: navy,
+                            foregroundColor: Colors.white,
+                          ),
                           onPressed: (ulasan.adminReply == null || ulasan.adminReply!.isEmpty)
                               ? () {
                             final newReply = replyController.text.trim();
                             updateAdminReply(ulasan.id, newReply);
                           }
-                              : null, // disable tombol jika sudah ada balasan
+                              : null,
                           child: const Text('Simpan Balasan'),
                         ),
                       ),

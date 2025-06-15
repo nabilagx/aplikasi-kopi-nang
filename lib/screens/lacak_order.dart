@@ -157,8 +157,12 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
 
   @override
   Widget build(BuildContext context) {
-    final LatLng? orderPosition = (orderLat != null && orderLng != null) ? LatLng(orderLat!, orderLng!) : null;
-    final LatLng? adminPosition = (adminLat != null && adminLng != null) ? LatLng(adminLat!, adminLng!) : null;
+    final LatLng? orderPosition = (orderLat != null && orderLng != null)
+        ? LatLng(orderLat!, orderLng!)
+        : null;
+    final LatLng? adminPosition = (adminLat != null && adminLng != null)
+        ? LatLng(adminLat!, adminLng!)
+        : null;
 
     // Center map di tengah antara admin dan order jika ada, atau admin, atau titik default
     LatLng centerMap = const LatLng(-7.7829, 113.9094);
@@ -172,8 +176,11 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFEAF4FB), // biru soft
       appBar: AppBar(
-        title: const Text('Lacak Pesanan (Admin)'),
+        title: const Text('Lacak Pesanan'),
+        backgroundColor: const Color(0xFF0D47A1), // biru navy gelap
+        foregroundColor: Colors.white,
       ),
       drawer: DrawerAdmin(
         onSelectMenu: (menu) {
@@ -187,10 +194,21 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
           children: [
             TextField(
               controller: _orderIdController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Masukkan Order ID',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+                labelStyle: const TextStyle(color: Color(0xFF0D47A1)),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF0D47A1)),
+                ),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF0D47A1)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                      color: Color(0xFF0D47A1), width: 2),
+                ),
               ),
               keyboardType: TextInputType.number,
               onSubmitted: (value) {
@@ -208,6 +226,15 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D47A1), // navy
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               onPressed: isLoading
                   ? null
                   : () {
@@ -223,7 +250,14 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
                 }
               },
               child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
                   : const Text('Lacak Pesanan'),
             ),
             const SizedBox(height: 20),
@@ -235,60 +269,65 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
             if (orderPosition != null && adminPosition != null)
               Text(
                 calculateDistance(),
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0D47A1),
+                ),
               ),
             const SizedBox(height: 10),
             if (adminPosition != null)
               Expanded(
-                child: FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                    initialCenter: centerMap,
-                    initialZoom: 13,
-                  ),
-
-                  children: [
-                    TileLayer(
-                      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                      subdomains: const ['a', 'b', 'c'],
-                      userAgentPackageName: 'com.example.kopinang',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: FlutterMap(
+                    mapController: _mapController,
+                    options: MapOptions(
+                      initialCenter: centerMap,
+                      initialZoom: 13,
                     ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: adminPosition,
-                          width: 40,
-                          height: 40,
-                          child: const Icon(
-                            Icons.person_pin_circle,
-                            color: Colors.blue,
-                            size: 40,
-                          ),
-                        ),
-                        if (orderPosition != null)
+                    children: [
+                      TileLayer(
+                        urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        subdomains: const ['a', 'b', 'c'],
+                        userAgentPackageName: 'com.example.kopinang',
+                      ),
+                      MarkerLayer(
+                        markers: [
                           Marker(
-                            point: orderPosition,
+                            point: adminPosition,
                             width: 40,
                             height: 40,
                             child: const Icon(
-                              Icons.location_on,
-                              color: Colors.red,
+                              Icons.person_pin_circle,
+                              color: Colors.blue,
                               size: 40,
                             ),
                           ),
-                      ],
-                    ),
-                    if (orderPosition != null)
-                      PolylineLayer(
-                        polylines: [
-                          Polyline(
-                            points: [adminPosition, orderPosition],
-                            strokeWidth: 4,
-                            color: Colors.green,
-                          ),
+                          if (orderPosition != null)
+                            Marker(
+                              point: orderPosition,
+                              width: 40,
+                              height: 40,
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Colors.red,
+                                size: 40,
+                              ),
+                            ),
                         ],
                       ),
-                  ],
+                      if (orderPosition != null)
+                        PolylineLayer(
+                          polylines: [
+                            Polyline(
+                              points: [adminPosition, orderPosition],
+                              strokeWidth: 4,
+                              color: Colors.green,
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
               ),
           ],

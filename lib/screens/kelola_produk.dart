@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class KelolaProdukPage extends StatefulWidget {
   @override
@@ -95,8 +96,11 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                 });
               }
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Gagal ambil gambar: $e')),
+              showKopiNangAlert(
+                context,
+                "Gagal",
+                "Gagal ambil gambar: $e",
+                type: 'error',
               );
             }
           }
@@ -150,15 +154,21 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         TextButton.icon(
-                          icon: Icon(Icons.photo),
-                          label: Text('Galeri'),
+                          icon: Icon(
+                            Icons.photo,
+                            color: Color(0xFF0D47A1),
+                          ),
+                          label: Text('Galeri', style: TextStyle(color: Color(0xFF0D47A1))),
                           onPressed: () async {
                             await pickImageDialog(ImageSource.gallery);
                           },
                         ),
                         TextButton.icon(
-                          icon: Icon(Icons.camera_alt),
-                          label: Text('Kamera'),
+                          icon: Icon(
+                            Icons.camera_alt,
+                            color: Color(0xFF0D47A1),
+                          ),
+                          label: Text('Kamera', style: TextStyle(color: Color(0xFF0D47A1))),
                           onPressed: () async {
                             await pickImageDialog(ImageSource.camera);
                           },
@@ -174,8 +184,12 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
+                style: TextButton.styleFrom(
+                  foregroundColor: Color(0xFF0D47A1),
+                ),
                 child: Text('Batal'),
               ),
+
               ElevatedButton(
                 onPressed: _loading
                     ? null
@@ -190,9 +204,12 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                   if (_imageFile != null) {
                     imageUrl = await uploadImageToImgur(_imageFile!);
                     if (imageUrl == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Gagal upload gambar'),
-                      ));
+                      showKopiNangAlert(
+                        context,
+                        "Gagal Upload",
+                        "Gagal upload gambar",
+                        type: 'error',
+                      );
                       setState(() {
                         _loading = false;
                       });
@@ -251,16 +268,22 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                     }
 
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Produk berhasil disimpan')),
+                    showKopiNangAlert(
+                      context,
+                      "Produk Disimpan",
+                      "Produk berhasil disimpan",
+                      type: 'success',
                     );
                     setState(() {
                       _imageFile = null;
                       editingProduct = null;
                     });
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal simpan produk: $e')),
+                    showKopiNangAlert(
+                      context,
+                      "Gagal",
+                      "Gagal simpan produk: $e",
+                      type: 'error',
                     );
                   } finally {
                     setState(() {
@@ -268,6 +291,10 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                     });
                   }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF0D47A1),
+                  foregroundColor: Colors.white,
+                ),
                 child: _loading
                     ? CircularProgressIndicator(color: Colors.white)
                     : Text(editingProduct == null ? 'Tambah' : 'Update'),
@@ -283,15 +310,21 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
     try {
       final response = await http.delete(Uri.parse('$apiBaseUrl/$id'));
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Produk berhasil dihapus')),
+        showKopiNangAlert(
+          context,
+          "Produk Dihapus",
+          "Produk berhasil dihapus",
+          type: 'success',
         );
       } else {
         throw Exception('Gagal hapus produk');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal hapus produk: $e')),
+      showKopiNangAlert(
+        context,
+        "Produk Dihapus",
+        "Gagal hapus produk: $e",
+        type: 'error',
       );
     }
   }
@@ -310,9 +343,12 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFEAF4FB),
       drawer: DrawerAdmin(scaffoldContext: context),
       appBar: AppBar(
         title: Text('Kelola Produk'),
+        backgroundColor: const Color(0xFF0D47A1),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -322,6 +358,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
           ),
         ],
       ),
+
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: fetchProducts(),
         builder: (context, snapshot) {
@@ -340,6 +377,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
               itemBuilder: (_, index) {
                 final p = products[index];
                 return Card(
+                  color: Colors.white,
                   child: ListTile(
                     leading: (p['gambar'] != null && p['gambar'] != '')
                         ? Image.network(p['gambar'], width: 60, fit: BoxFit.cover)
@@ -350,7 +388,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
+                          icon: Icon(Icons.edit, color: Color(0xFF0D47A1)),
                           onPressed: () {
                             openForm(product: p);
                           },
@@ -366,8 +404,9 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx, false),
-                                    child: Text('Batal'),
+                                    child: Text('Batal', style: TextStyle(color: Colors.grey[700])),
                                   ),
+
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx, true),
                                     child: Text('Hapus'),

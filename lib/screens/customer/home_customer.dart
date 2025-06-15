@@ -6,11 +6,15 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 import '../../widgets/customer_bottom_nav.dart';
 import '../../widgets/PromoCarousel.dart';
 import 'detail_menu_screen.dart';
 import 'cart_screen.dart';
+import 'package:provider/provider.dart';
+import 'cart_provider.dart';
+
 
 class HomeCustomer extends StatefulWidget {
   const HomeCustomer({super.key});
@@ -71,6 +75,7 @@ class _HomeCustomerState extends State<HomeCustomer> {
       _updateAddressFromPosition(position);
     });
   }
+
 
   Future<void> _updateAddressFromPosition(Position position) async {
     try {
@@ -229,8 +234,12 @@ class _HomeCustomerState extends State<HomeCustomer> {
                   itemCount: produk.length,
                   itemBuilder: (context, index) {
                     final item = produk[index];
+                    final bool isOutOfStock = item['stok'] == 0;
+
                     return GestureDetector(
-                      onTap: () {
+                      onTap: isOutOfStock
+                          ? null
+                          : () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -238,67 +247,119 @@ class _HomeCustomerState extends State<HomeCustomer> {
                           ),
                         );
                       },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                              child: Image.network(
-                                item['gambar'] ?? '',
-                                height: 110,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  height: 110,
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
-                              child: Column(
+                      child: Opacity(
+                        opacity: isOutOfStock ? 0.6 : 1.0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isOutOfStock ? Colors.grey.shade200 : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Stack(
+                            children: [
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    item['nama'] ?? '-',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Rp${item['harga'] ?? '-'}',
-                                    style: TextStyle(
-                                      color: Colors.blue.shade700,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                  // Gambar produk
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                    child: Stack(
+                                      children: [
+                                        Image.network(
+                                          item['gambar'] ?? '',
+                                          height: 90,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) => Container(
+                                            height: 100,
+                                            color: Colors.grey.shade200,
+                                            child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                                          ),
+                                        ),
+                                        if (isOutOfStock)
+                                          Container(
+                                            height: 120,
+                                            width: double.infinity,
+                                            color: Colors.black.withOpacity(0.5),
+                                            alignment: Alignment.center,
+                                            child: const Text(
+                                              'SOLD',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 2,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
+
+                                  // Info Produk
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['nama'] ?? '-',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Rp${item['harga'] ?? '-'}',
+                                          style: TextStyle(
+                                            color: Colors.blue.shade700,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          item['deskripsi'] ?? '',
+                                          style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const Spacer(),
+
+                                  if (!isOutOfStock)
+                                    Align(
+                                      alignment: Alignment.bottomRight,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.add_circle, color: Colors.blueAccent, size: 28),
+                                        onPressed: () {
+                                          final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                                          cartProvider.addItem({
+                                            'id': item['id'],
+                                            'nama': item['nama'],
+                                            'harga': item['harga'],
+                                            'gambar': item['gambar'],
+                                            'jumlah': 1,
+                                          });
+
+                                          showKopiNangAlert(context, 'Berhasil!', '${item['nama']} telah ditambahkan ke keranjang.');
+
+                                        },
+                                        constraints: const BoxConstraints(),
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                    ),
                                 ],
                               ),
-                            ),
-                            const Spacer(),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: IconButton(
-                                icon: const Icon(Icons.add_circle, color: Colors.blue, size: 24),
-                                onPressed: () {
-                                  // TODO: Tambah ke keranjang
-                                },
-                                constraints: const BoxConstraints(),
-                                padding: EdgeInsets.zero,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
+
                   },
                 );
               },

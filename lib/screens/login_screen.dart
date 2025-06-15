@@ -22,7 +22,8 @@ class LoginScreen extends StatelessWidget {
         idToken: googleAuth.idToken,
       );
 
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+          credential);
       return userCredential.user;
     } catch (e) {
       return null;
@@ -30,7 +31,8 @@ class LoginScreen extends StatelessWidget {
   }
 
   void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)));
   }
 
   Future<void> loginCustomer(BuildContext context) async {
@@ -83,10 +85,14 @@ class LoginScreen extends StatelessWidget {
 
     if (!userDoc.exists) {
       // Belum ada di users, cek email di invite collection
-      final inviteQuery = await inviteRef.where('email', isEqualTo: user.email).limit(1).get();
+      final inviteQuery = await inviteRef
+          .where('email', isEqualTo: user.email)
+          .limit(1)
+          .get();
 
       if (inviteQuery.docs.isEmpty) {
-        _showError(context, "Data admin tidak ditemukan. Hubungi administrator.");
+        _showError(
+            context, "Data admin tidak ditemukan. Hubungi administrator.");
         await FirebaseAuth.instance.signOut();
         await _googleSignIn.signOut();
         return;
@@ -121,31 +127,85 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login KOPI NANG")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton.icon(
-              icon: const Icon(Icons.person),
-              label: const Text("Login sebagai Customer"),
-              onPressed: () => loginCustomer(context),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/bg_login.gif',
+              fit: BoxFit.cover,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.admin_panel_settings),
-              label: const Text("Login sebagai Admin"),
-              onPressed: () => loginAdmin(context),
+          ),
+          Container(
+            color: Colors.black.withOpacity(0.4), // biar teks kelihatan
+          ),
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/logo.png',
+                    height: 175,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Selamat Datang di KOPI NANG",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D47A1),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.person, color: Colors.white),
+                    label: const Text("Login sebagai Customer"),
+                    onPressed: () => loginCustomer(context),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D47A1),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.admin_panel_settings, color: Colors.white),
+                    label: const Text("Login sebagai Admin"),
+                    onPressed: () => loginAdmin(context),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF0D47A1),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFF0D47A1)),
+                      ),
+                    ),
+                    icon: const Icon(Icons.app_registration, color: Color(0xFF0D47A1)),
+                    label: const Text("Register Customer"),
+                    onPressed: () => loginCustomer(context),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.app_registration),
-              label: const Text("Register Customer"),
-              onPressed: () => loginCustomer(context),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
