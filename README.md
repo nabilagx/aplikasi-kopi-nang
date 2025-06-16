@@ -39,8 +39,6 @@
 - 📊 Dashboard Admin:
     - 🧾 Daftar pesanan terbaru
     - 💰 Total pemasukan hari ini
-    - 🔥 Produk terlaris minggu ini
-    - 📈 Grafik pendapatan 7 hari terakhir (bar chart interaktif)
 - 🎁 Kelola promo (Firebase Firestore)
 - 💬 Melihat ulasan & membalas komentar pelanggan
 - 📂 Ekspor data transaksi (opsional)
@@ -83,16 +81,6 @@ flutter run
     * Buat koleksi Firestore: `promo`
 * Buat akun Midtrans (sandbox), dapatkan `SERVER_KEY`
 * Sesuaikan konfigurasi API di Flutter & ASP.NET
-
----
-
-## 🧪 Contoh Tampilan
-
-| Pembayaran QRIS                          | Struk Pesanan                             | Grafik Pendapatan                          |
-| ---------------------------------------- | ----------------------------------------- | ------------------------------------------ |
-| ![QRIS](https://i.imgur.com/aXhSD6f.png) | ![Struk](https://i.imgur.com/YT8WftY.png) | ![Grafik](https://i.imgur.com/PENjBqU.png) |
-
-> *Note: Gambar hanya ilustrasi. Tampilan akhir bisa berbeda sesuai build.*
 
 ---
 
