@@ -49,7 +49,7 @@
 
 | Layer        | Teknologi                     |
 |--------------|-------------------------------|
-| Frontend     | Flutter (Mobile & Web)        |
+| Frontend     | Flutter (Mobile)              |
 | Backend      | ASP.NET Core Web API          |
 | Database     | PostgreSQL (Railway)          |
 | Auth         | Firebase Authentication       |
