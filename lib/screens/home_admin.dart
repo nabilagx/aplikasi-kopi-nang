@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
-import 'package:kopinang/widgets/kopi_nang_alert.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DashboardAdminPage extends StatefulWidget {
   const DashboardAdminPage({super.key});
@@ -30,7 +30,21 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
   }
 
   Future<void> fetchOrders() async {
-    final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'));
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      print('User belum login atau token tidak tersedia');
+      return;
+    }
+
+    final response = await http.get(
+      Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'),
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -54,9 +68,10 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
         totalPemasukan = pemasukan;
       });
     } else {
-      print('Failed to fetch orders');
+      print('Gagal mengambil orders: ${response.statusCode}');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

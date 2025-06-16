@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:kopinang/widgets/drawer_admin.dart';
 import 'package:kopinang/widgets/kopi_nang_alert.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class KelolaProdukPage extends StatefulWidget {
   @override
@@ -330,13 +331,26 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchProducts() async {
-    final response = await http.get(Uri.parse(apiBaseUrl));
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      throw Exception('User belum login atau token tidak ditemukan');
+    }
+
+    final response = await http.get(
+      Uri.parse(apiBaseUrl),
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
     if (response.statusCode == 200) {
       List<dynamic> jsonList = jsonDecode(response.body);
-      // Pastikan API mengirim array produk dengan properti 'id', 'nama', dll.
       return jsonList.map((e) => e as Map<String, dynamic>).toList();
     } else {
-      throw Exception('Gagal mengambil produk');
+      throw Exception('Gagal mengambil produk: ${response.statusCode}');
     }
   }
 

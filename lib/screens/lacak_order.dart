@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class LacakOrderPage extends StatefulWidget {
@@ -95,12 +96,26 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
     });
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        setState(() {
+          errorMessage = 'Anda belum login.';
+        });
+        return;
+      }
+
       final url = Uri.parse('$baseUrl/$orderId');
-      final response = await http.get(url);
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $idToken',
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
         if (data['latitude'] != null && data['longitude'] != null) {
           setState(() {
             orderLat = (data['latitude'] as num).toDouble();
@@ -130,6 +145,7 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
       });
     }
   }
+
 
   String calculateDistance() {
     if (orderLat == null || orderLng == null || adminLat == null || adminLng == null) return '';

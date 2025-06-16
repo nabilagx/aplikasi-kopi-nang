@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../widgets/customer_bottom_nav.dart';
 import 'package:kopinang/widgets/kopi_nang_alert.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class OrderDetailPage extends StatefulWidget {
   final int orderId;
@@ -26,8 +28,22 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   Future<void> fetchOrder() async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        showKopiNangAlert(context, "Error", "User belum login", type: 'error');
+        return;
+      }
+
       final url = 'https://kopinang-api-production.up.railway.app/api/Order/${widget.orderId}';
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+      );
 
       if (response.statusCode == 200) {
         setState(() {
@@ -47,6 +63,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       showKopiNangAlert(context, "Error", "Error: $e", type: 'error');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

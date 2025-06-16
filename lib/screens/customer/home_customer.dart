@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -102,17 +103,35 @@ class _HomeCustomerState extends State<HomeCustomer> {
     }
   }
 
-  Future<List<dynamic>> fetchProduk() async {
-    final response = await http.get(Uri.parse(apiBaseUrl));
+  Future<List<dynamic>> fetchProduk(String searchQuery) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.where((item) {
-        final nama = item['nama']?.toString().toLowerCase() ?? '';
-        return nama.contains(searchQuery);
-      }).toList();
-    } else {
-      throw Exception('Gagal mengambil produk');
+      if (idToken == null) {
+        throw Exception('User belum login');
+      }
+
+      final response = await http.get(
+        Uri.parse(apiBaseUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.where((item) {
+          final nama = item['nama']?.toString().toLowerCase() ?? '';
+          return nama.contains(searchQuery.toLowerCase());
+        }).toList();
+      } else {
+        throw Exception('Gagal mengambil produk: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetchProduk: $e');
+      rethrow;
     }
   }
 
@@ -207,7 +226,7 @@ class _HomeCustomerState extends State<HomeCustomer> {
 
             // Produk dari API
             FutureBuilder<List<dynamic>>(
-              future: fetchProduk(),
+              future: fetchProduk(searchQuery),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
+
 
 class UlasanModel {
   final int id;
@@ -55,39 +58,76 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
   }
 
   Future<List<UlasanModel>> fetchUlasan() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      throw Exception('User belum login');
+    }
+
     final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan');
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
       return jsonData.map((e) => UlasanModel.fromJson(e)).toList();
     } else {
-      throw Exception('Gagal memuat ulasan');
+      throw Exception('Gagal memuat ulasan: ${response.statusCode}');
     }
   }
 
-  Future<void> updateAdminReply(int ulasanId, String reply) async {
-    final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan/$ulasanId');
-    final body = json.encode({
-      'adminReply': reply,
-    });
 
-    final headers = {'Content-Type': 'application/json'};
+  Future<void> updateAdminReply(int ulasanId, String reply) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      showKopiNangAlert(
+        context,
+        "Gagal",
+        "Anda belum login",
+        type: 'error',
+      );
+      return;
+    }
+
+    final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan/$ulasanId');
+    final body = json.encode({'adminReply': reply});
+
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $idToken',
+    };
 
     final response = await http.patch(url, headers: headers, body: body);
+
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Balasan admin berhasil disimpan')),
+      showKopiNangAlert(
+        context,
+        "Balasan dikirim",
+        "Balasan berhasil dikirim",
+        type: 'success',
       );
 
       setState(() {
         futureUlasan = fetchUlasan();
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan balasan: ${response.statusCode}')),
+      showKopiNangAlert(
+        context,
+        "Gagal",
+        "Gagal kirim balasan: ${response.statusCode}",
+        type: 'error',
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

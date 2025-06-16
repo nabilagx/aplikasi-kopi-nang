@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
 import 'package:kopinang/widgets/kopi_nang_alert.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class VerifikasiPesananPage extends StatefulWidget {
   const VerifikasiPesananPage({Key? key}) : super(key: key);
@@ -41,10 +42,26 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
 
   Future<void> verifikasiOrder(String orderId) async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        showKopiNangAlert(
+          context,
+          'Gagal',
+          'Anda belum login.',
+          type: 'error',
+        );
+        return;
+      }
+
       final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/$orderId/verifikasi');
       final response = await http.put(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -68,7 +85,7 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
             }
           }
         } catch (_) {
-          // fallback message tetap digunakan
+          // Gunakan fallback message
         }
 
         showKopiNangAlert(
@@ -87,6 +104,7 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
       );
     }
   }
+
 
   void _handleBarcode(BarcodeCapture capture) async {
     if (isProcessing) return;

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'cart_provider.dart';
 import 'package:kopinang/widgets/kopi_nang_alert.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DetailMenuScreen extends StatefulWidget {
   final Map<String, dynamic> menuData;
@@ -24,14 +25,32 @@ class _DetailMenuScreenState extends State<DetailMenuScreen> {
   }
 
   Future<List<Map<String, dynamic>>> fetchReviews(int produkId) async {
-    final resp = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan'));
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      throw Exception('User belum login');
+    }
+
+    final headers = {
+      'Authorization': 'Bearer $idToken',
+      'Content-Type': 'application/json',
+    };
+
+    final resp = await http.get(
+      Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan'),
+      headers: headers,
+    );
+
     if (resp.statusCode != 200) throw Exception();
     final List reviews = json.decode(resp.body);
     final List<Map<String, dynamic>> result = [];
 
     for (var r in reviews) {
       final orderResp = await http.get(
-          Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/${r['orderId']}'));
+        Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/${r['orderId']}'),
+        headers: headers,
+      );
       if (orderResp.statusCode != 200) continue;
       final order = json.decode(orderResp.body);
       final details = order['orderDetails'] as List;
@@ -48,6 +67,7 @@ class _DetailMenuScreenState extends State<DetailMenuScreen> {
 
     return result.take(3).toList();
   }
+
 
   double getAverageRating(List<Map<String, dynamic>> ulasanList) {
     if (ulasanList.isEmpty) return 0.0;

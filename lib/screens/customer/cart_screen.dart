@@ -12,8 +12,6 @@ import 'package:kopinang/widgets/kopi_nang_alert.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
 
@@ -126,11 +124,27 @@ class _CartScreenState extends State<CartScreen> {
       return;
     }
 
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      throw Exception('Pengguna belum login');
+    }
+
+    if (idToken == null) {
+      throw Exception('User belum login atau token tidak tersedia');
+    }
+
     final response = await http.post(
       Uri.parse('https://kopinang-api-production.up.railway.app/api/order/payment/qris'),
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $idToken",
+      },
       body: jsonEncode(body),
     );
+
+
 
     print('Response: ${response.statusCode} => ${response.body}');
 
@@ -259,37 +273,58 @@ class _CartScreenState extends State<CartScreen> {
         "orderDetails": orderDetails,
       };
 
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        throw Exception('User belum login.');
+      }
+
       final response = await http.post(
         Uri.parse('https://kopinang-api-production.up.railway.app/api/order'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
         body: jsonEncode(payload),
       );
+
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
         final orderId = data['id'].toString();
 
+
         if (_selectedPaymentMethod == 'QRIS') {
+          final user = FirebaseAuth.instance.currentUser;
+
           await createMidtransTransaction(
             orderId: int.parse(orderId),
             totalHarga: totalHarga.toInt(),
-            nama: user.displayName ?? 'User',
-            email: user.email ?? 'user@example.com',
+            nama: user?.displayName ?? 'User',
+            email: user?.email ?? 'user@example.com',
           );
+
         }
 
-        // 2. Generate & upload QR ke Imgur dari orderId
         final qrUrl = await generateAndUploadQr(orderId);
-
-        // 3. Update order dengan QR code URL (PATCH/PUT)
         final updatePayload = {"qrCode": qrUrl, "updatedAt": DateTime.now().toUtc().toIso8601String()};
+
+
+        final idToken = await user?.getIdToken();
+
+        if (idToken == null) {
+          throw Exception('User belum login');
+        }
 
         final updateResponse = await http.put(
           Uri.parse('https://kopinang-api-production.up.railway.app/api/order/$orderId/qrcode'),
-          headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({"qrCode": qrUrl}),
-          // Tanpa properti, langsung string
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $idToken',
+          },
+          body: jsonEncode({"qrCode": qrUrl}),
         );
+
 
         print('Mengirim QR code ke backend: $qrUrl');
         print('Status code: ${updateResponse.statusCode}');

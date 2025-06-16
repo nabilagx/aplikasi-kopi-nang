@@ -124,16 +124,30 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   Map<int, List<UlasanModel>> ulasanPerOrder = {};
 
   Future<List<OrderModel>> fetchOrdersByUid(String uid) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      throw Exception('User belum login');
+    }
+
     final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/user/$uid');
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
       return jsonData.map((e) => OrderModel.fromJson(e)).toList();
     } else {
-      throw Exception('Gagal memuat pesanan');
+      throw Exception('Gagal memuat pesanan (${response.statusCode})');
     }
   }
+
 
   Future<List<OrderModel>> getUserOrders() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -142,15 +156,30 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   Future<List<UlasanModel>> fetchUlasanByOrderId(int orderId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      throw Exception('User belum login');
+    }
+
     final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan/order/$orderId');
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
       return jsonData.map((e) => UlasanModel.fromJson(e)).toList();
     } else {
-      throw Exception('Gagal memuat ulasan');
+      throw Exception('Gagal memuat ulasan (${response.statusCode})');
     }
   }
+
 
   Future<void> fetchAllUlasan(List<OrderModel> orders) async {
     for (var order in orders) {
@@ -171,7 +200,21 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     required String review,
   }) async {
     final nowIso = DateTime.now().toUtc().toIso8601String();
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      throw Exception('User belum login');
+    }
+
     final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
+    );
     final body = json.encode({
       'id': 0,
       'orderId': orderId,
@@ -184,8 +227,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
     final headers = {'Content-Type': 'application/json-patch+json'};
 
-    final response = await http.post(url, headers: headers, body: body);
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    final response_post = await http.post(url, headers: headers, body: body);
+    if (response_post.statusCode == 200 || response.statusCode == 201) {
       showKopiNangAlert(
         context,
         "Ulasan Berhasil",

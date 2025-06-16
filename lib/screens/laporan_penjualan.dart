@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -32,8 +33,25 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
 
   Future<void> fetchOrders() async {
     setState(() => loading = true);
+
     try {
-      final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'));
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        _showMessage('User belum login');
+        setState(() => loading = false);
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -47,8 +65,10 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
     } catch (e) {
       _showMessage('Error mengambil data: $e');
     }
+
     setState(() => loading = false);
   }
+
 
   List<dynamic> get filteredOrders {
     return orders.where((order) {
@@ -178,7 +198,6 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
 
     _showMessage('Berhasil menyimpan file:\n$filePath');
 
-    // Buka file dengan aplikasi terkait jika ada
     OpenFile.open(filePath);
   }
 

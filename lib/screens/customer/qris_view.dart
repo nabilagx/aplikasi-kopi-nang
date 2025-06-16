@@ -3,6 +3,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'struk_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class QrisWebViewPage extends StatefulWidget {
   final String url;
@@ -36,8 +38,20 @@ class _QrisWebViewPageState extends State<QrisWebViewPage> {
 
   Future<void> _checkPaymentStatus() async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        print("User belum login");
+        return;
+      }
+
       final response = await http.post(
         Uri.parse('https://kopinang-api-production.up.railway.app/api/order/${widget.orderId}/verifikasi-midtrans'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -51,15 +65,30 @@ class _QrisWebViewPageState extends State<QrisWebViewPage> {
 
           await _navigateToStruk();
         }
+      } else {
+        print("Gagal verifikasi midtrans: ${response.body}");
       }
     } catch (e) {
       print("Error checking payment status: $e");
     }
   }
 
+
   Future<void> _navigateToStruk() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      showKopiNangAlert(context, "Error", "User belum login", type: 'error');
+      return;
+    }
+
     final orderRes = await http.get(
       Uri.parse('https://kopinang-api-production.up.railway.app/api/order/${widget.orderId}'),
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
     );
 
     if (orderRes.statusCode == 200) {
@@ -77,12 +106,29 @@ class _QrisWebViewPageState extends State<QrisWebViewPage> {
           ),
         ),
       );
+    } else {
+      showKopiNangAlert(context, "Gagal", "Gagal memuat data struk", type: 'error');
     }
   }
 
+
   Future<void> _manualCheckStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final idToken = await user?.getIdToken();
+
+    if (idToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User belum login.")),
+      );
+      return;
+    }
+
     final response = await http.post(
       Uri.parse('https://kopinang-api-production.up.railway.app/api/order/${widget.orderId}/verifikasi-midtrans'),
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
     );
 
     if (response.statusCode == 200) {
@@ -105,6 +151,7 @@ class _QrisWebViewPageState extends State<QrisWebViewPage> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

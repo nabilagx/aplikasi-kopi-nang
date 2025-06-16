@@ -4,6 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'customer/home_customer.dart';
 import 'home_admin.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({Key? key}) : super(key: key);
@@ -22,13 +26,42 @@ class LoginScreen extends StatelessWidget {
         idToken: googleAuth.idToken,
       );
 
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(
-          credential);
-      return userCredential.user;
+      // Login ke Firebase
+      final userCredential =
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      final user = userCredential.user;
+      if (user == null) return null;
+
+      // Ambil idToken Firebase
+      final idToken = await user.getIdToken();
+
+      // Kirim ke backend ASP.NET buat dapat JWT
+      final response = await http.post(
+        Uri.parse("https://kopinang-api-production.up.railway.app/api/Auth/firebase-login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"idToken": idToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final token = jsonDecode(response.body)["token"];
+
+        // Simpan JWT ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("jwt", token);
+
+        print("JWT berhasil disimpan: $token");
+        print("nih idtoken:  $idToken");
+      } else {
+        print("Gagal dapat JWT: ${response.body}");
+      }
+
+      return user;
     } catch (e) {
+      print("Error saat login: $e");
       return null;
     }
   }
+
 
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -70,6 +103,10 @@ class LoginScreen extends StatelessWidget {
       MaterialPageRoute(builder: (_) => const HomeCustomer()),
     );
   }
+
+
+
+
 
   Future<void> loginAdmin(BuildContext context) async {
     final user = await _signInWithGoogle();

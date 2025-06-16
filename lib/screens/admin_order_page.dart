@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:kopinang/widgets/drawer_admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kopinang/widgets/kopi_nang_alert.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AppUser {
   final String uid;
@@ -133,21 +133,35 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
     await fetchOrders();
   }
 
-
-
   Future<void> fetchAllProduk() async {
     try {
-      final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Produk'));
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        throw Exception('User belum login atau token tidak tersedia');
+      }
+
+      final response = await http.get(
+        Uri.parse('https://kopinang-api-production.up.railway.app/api/Produk'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
       if (response.statusCode == 200) {
         final List data = json.decode(response.body);
         allProduk = data.map((e) => Produk.fromJson(e)).toList();
       } else {
-        throw Exception('Gagal mengambil produk');
+        throw Exception('Gagal mengambil produk: ${response.statusCode}');
       }
     } catch (e) {
       _hasError = true;
+      print('fetchAllProduk error: $e');
     }
   }
+
 
   Future<void> fetchFirebaseUsers() async {
     final snapshot = await FirebaseFirestore.instance.collection('users').get();
@@ -171,7 +185,6 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
   }
 
 
-
   Future<void> fetchOrders() async {
     setState(() {
       _isLoading = true;
@@ -179,7 +192,21 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
     });
 
     try {
-      final response = await http.get(Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'));
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        throw Exception('User belum login atau token tidak tersedia');
+      }
+
+      final response = await http.get(
+        Uri.parse('https://kopinang-api-production.up.railway.app/api/Order'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -187,6 +214,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
           _isLoading = false;
         });
       } else {
+        print('Status error: ${response.statusCode}');
         setState(() {
           _hasError = true;
           _isLoading = false;
@@ -203,10 +231,20 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
 
   Future<void> updateStatus(int orderId, String newStatus) async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      final idToken = await user?.getIdToken();
+
+      if (idToken == null) {
+        throw Exception('User belum login atau token tidak tersedia');
+      }
+
       final response = await http.put(
         Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/$orderId/status'),
-        headers: {'Content-Type': 'application/json-patch+json'},
-        body: jsonEncode(newStatus),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({"status": newStatus}), // ini penting
       );
 
       if (response.statusCode == 200) {
@@ -216,13 +254,12 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
           'Status $orderId berhasil diperbarui',
           type: 'success',
         );
-
-        fetchOrders(); // Refresh
+        fetchOrders(); // refresh data
       } else {
         showKopiNangAlert(
           context,
           'Gagal',
-          'Status $orderId gagal diperbarui',
+          'Status $orderId gagal diperbarui (${response.statusCode})',
           type: 'error',
         );
       }
@@ -230,11 +267,12 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
       showKopiNangAlert(
         context,
         'Error',
-        'Error mmeperbarui status',
+        'Error memperbarui status: $e',
         type: 'error',
       );
     }
   }
+
 
   String getNamaProdukById(int id) {
     final produk = allProduk.firstWhere(
