@@ -1,16 +1,58 @@
-# kopinang
+<p align="center">
+  <img src="assets/images/logo.png" alt="KOPI NANG Logo" width="180">
+</p>
 
-A new Flutter project.
+<h1 align="center">KOPI NANG ☕</h1>
+<p align="center"><i>Aplikasi Pemesanan Kopi Berbasis Lokasi dan Verifikasi Visual</i></p>
 
-## Getting Started
+<p align="center">
+  Flutter • ASP.NET Core • PostgreSQL • Firebase • Midtrans
+</p>
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 📱 Tentang Aplikasi
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+**KOPI NANG** adalah aplikasi pemesanan kopi kekinian yang memadukan teknologi dengan cita rasa lokal. Dengan sistem berbasis lokasi dan verifikasi visual via QR code, pengguna dapat memesan kopi secara instan dan efisien, serta menikmati pengalaman pemesanan modern yang aman dan nyaman.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🎯 Fitur Utama
+
+### Pelanggan
+- 🔐 Login dengan Google (Firebase Auth)
+- 📍 Temukan & pesan kopi dari lokasi terdekat
+- 🎁 Gunakan promo aktif (masa berlaku & kuota)
+- 💳 Pembayaran QRIS via Midtrans
+- 🧾 Struk digital berbentuk tiket + QR code
+- ⭐ Memberi ulasan produk
+
+### Admin
+- 📦 Kelola pesanan masuk
+- 📊 Dashboard Web untuk monitoring pesanan & pendapatan
+- ✅ Verifikasi QR untuk menyelesaikan pesanan
+- 🔍 Lacak status dan pendapatan harian
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+| Layer        | Teknologi                     |
+|--------------|-------------------------------|
+| Frontend     | Flutter (Mobile & Web)        |
+| Backend      | ASP.NET Core Web API          |
+| Database     | PostgreSQL (Railway)          |
+| Auth         | Firebase Authentication       |
+| Promo Data   | Firebase Firestore            |
+| Pembayaran   | Midtrans Snap API (QRIS)      |
+| Deployment   | Railway (API & DB)            |
+
+---
+
+## 🚀 Setup Cepat
+
+### 📦 Backend (.NET)
+```bash
+cd kopinang-api
+dotnet restore
+dotnet run
