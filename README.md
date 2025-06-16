@@ -13,25 +13,37 @@
 
 ## 📱 Tentang Aplikasi
 
-**KOPI NANG** adalah aplikasi pemesanan kopi kekinian yang memadukan teknologi dengan cita rasa lokal. Dengan sistem berbasis lokasi dan verifikasi visual via QR code, pengguna dapat memesan kopi secara instan dan efisien, serta menikmati pengalaman pemesanan modern yang aman dan nyaman.
+**KOPI NANG** adalah aplikasi pemesanan kopi berbasis lokasi yang memadukan teknologi dan kemudahan dalam satu genggaman. Pengguna dapat memesan kopi favorit, membayar secara digital, dan mengambil pesanan dengan QR code tanpa ribet. Admin pun dimudahkan dalam mengelola operasional harian lewat dashboard modern.
 
 ---
 
-## 🎯 Fitur Utama
+## 🎯 Fitur Aplikasi
 
-### Pelanggan
-- 🔐 Login dengan Google (Firebase Auth)
-- 📍 Temukan & pesan kopi dari lokasi terdekat
-- 🎁 Gunakan promo aktif (masa berlaku & kuota)
-- 💳 Pembayaran QRIS via Midtrans
-- 🧾 Struk digital berbentuk tiket + QR code
-- ⭐ Memberi ulasan produk
+### 👤 Pelanggan (Customer)
+- 🔐 Login menggunakan Google (Firebase Auth)
+- 🛍️ Lihat dan pilih menu kopi
+- 🗺️ Menemukan kedai berdasarkan lokasi
+- ➕ Tambahkan ke keranjang & atur jumlah
+- 🎁 Menggunakan promo (dari Firebase)
+- 💳 Pembayaran QRIS (Midtrans Snap API)
+- 📥 Melihat riwayat pesanan & statusnya
+- 🧾 Melihat struk pesanan (berbentuk tiket, dengan QR dan logo)
+- ⭐ Memberi ulasan produk setelah pesanan selesai
+- 📝 Melihat & menulis ulasan dengan rating dan komentar
+- 🔐 Logout aman
 
-### Admin
-- 📦 Kelola pesanan masuk
-- 📊 Dashboard Web untuk monitoring pesanan & pendapatan
-- ✅ Verifikasi QR untuk menyelesaikan pesanan
-- 🔍 Lacak status dan pendapatan harian
+### 🛠️ Admin
+- 🔐 Login (Firebase)
+- 📦 Melihat daftar pesanan masuk
+- 🧾 Scan QR code dari pelanggan untuk verifikasi & menyelesaikan pesanan
+- 📊 Dashboard Admin:
+    - 🧾 Daftar pesanan terbaru
+    - 💰 Total pemasukan hari ini
+    - 🔥 Produk terlaris minggu ini
+    - 📈 Grafik pendapatan 7 hari terakhir (bar chart interaktif)
+- 🎁 Kelola promo (Firebase Firestore)
+- 💬 Melihat ulasan & membalas komentar pelanggan
+- 📂 Ekspor data transaksi (opsional)
 
 ---
 
@@ -56,3 +68,50 @@
 cd kopinang-api
 dotnet restore
 dotnet run
+```
+
+### 📱 Flutter (Mobile)
+```bash
+flutter pub get
+flutter run
+```
+
+### ⚙️ Konfigurasi Penting
+
+* Buat project Firebase:
+    * Aktifkan Auth Google
+    * Buat koleksi Firestore: `promo`
+* Buat akun Midtrans (sandbox), dapatkan `SERVER_KEY`
+* Sesuaikan konfigurasi API di Flutter & ASP.NET
+
+---
+
+## 🧪 Contoh Tampilan
+
+| Pembayaran QRIS                          | Struk Pesanan                             | Grafik Pendapatan                          |
+| ---------------------------------------- | ----------------------------------------- | ------------------------------------------ |
+| ![QRIS](https://i.imgur.com/aXhSD6f.png) | ![Struk](https://i.imgur.com/YT8WftY.png) | ![Grafik](https://i.imgur.com/PENjBqU.png) |
+
+> *Note: Gambar hanya ilustrasi. Tampilan akhir bisa berbeda sesuai build.*
+
+---
+
+## 👨‍👩‍👧‍👦 KELOMPOK B07 – Pemrograman Berbasis Mobile
+
+| Nama                | NIM          | Peran                      |
+|---------------------|--------------|----------------------------|
+| Nabila Choirunisa   | 232410102059 | Project Manager            |
+| Fahmi Son Aji       | 232410102060 | System Analyst             |
+| Farhat Auliya Hasan | 232410102094 | Tester                     |
+
+---
+
+## 📄 Lisensi
+
+Aplikasi ini dikembangkan sebagai tugas akhir **mata kuliah Pemrograman Berbasis Mobile 2025**. Seluruh kode sumber dapat digunakan untuk keperluan pembelajaran dengan mencantumkan atribusi kepada tim pengembang asli.
+
+---
+
+<p align="center">
+  Made with ☕ & 💻 by <b>Tim KOPI NANG</b> — “Nikmati Kopi, Rasakan Teknologi”
+</p>
