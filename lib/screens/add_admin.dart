@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
 
 class AddAdminPage extends StatefulWidget {
@@ -27,8 +27,12 @@ class _AddAdminPageState extends State<AddAdminPage> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Email dan password tidak boleh kosong')));
+      showKopiNangAlert(
+        context,
+        'Peringatan',
+        'Emal dan pasword tidak boleh kosong',
+        type: 'warning',
+      );
       return;
     }
 
@@ -41,8 +45,12 @@ class _AddAdminPageState extends State<AddAdminPage> {
           .get();
 
       if (existing.docs.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User dengan email ini sudah terdaftar')));
+        showKopiNangAlert(
+          context,
+          'User sudah terdaftar',
+          'User dengan email ini sudah terdaftar',
+          type: 'warning',
+        );
         return;
       }
 
@@ -70,14 +78,26 @@ class _AddAdminPageState extends State<AddAdminPage> {
       _emailController.clear();
       _passwordController.clear();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Admin baru berhasil ditambahkan')));
+      showKopiNangAlert(
+        context,
+        'Admin ditambahkan',
+        'Admin baru berhasil ditambahkan',
+        type: 'success',
+      );
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error FirebaseAuth: ${e.message}')));
+      showKopiNangAlert(
+        context,
+        'Error',
+        'Error Firebaseauth: ${e.message}',
+        type: 'error',
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menambah admin: $e')));
+      showKopiNangAlert(
+        context,
+        'Gagal',
+        'Gagal menambah admin: $e',
+        type: 'error',
+      );
     }
   }
 
@@ -88,23 +108,30 @@ class _AddAdminPageState extends State<AddAdminPage> {
 
       // Admin hanya bisa dihapus jika bukan super admin
       if (uid == superAdminUid) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Super admin tidak bisa dihapus')));
+        showKopiNangAlert(
+          context,
+          'Dilarang',
+          'Super admin tidak bisa dihapus',
+          type: 'error',
+        );
         return;
       }
 
       // Hapus dari Firestore
       await _firestore.collection('users').doc(docId).delete();
-
-      // Hapus user dari Firebase Auth lewat admin SDK itu harus di server side
-      // Jadi kalau mau hapus user Firebase Auth di client-side, gak bisa langsung.
-      // Bisa di handle lewat Cloud Functions atau admin tools.
-
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Admin berhasil dihapus')));
+      showKopiNangAlert(
+        context,
+        'Admin dihapus',
+        'Admin berhasil dihapus',
+        type: 'success',
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menghapus admin: $e')));
+      showKopiNangAlert(
+        context,
+        'Gagal dihapus',
+        'Gagal menghapsu admin $e',
+        type: 'error',
+      );
     }
   }
 
@@ -134,8 +161,11 @@ class _AddAdminPageState extends State<AddAdminPage> {
               onPressed: () async {
                 final newName = _editController.text.trim();
                 if (newName.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Nama tidak boleh kosong')),
+                  showKopiNangAlert(
+                    context,
+                    'Peringatan',
+                    'Nama tidak boleh kosong',
+                    type: 'warning',
                   );
                   return;
                 }
@@ -145,12 +175,18 @@ class _AddAdminPageState extends State<AddAdminPage> {
                       .doc(docId)
                       .update({'name': newName});
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Nama admin berhasil diperbarui')),
+                  showKopiNangAlert(
+                    context,
+                    'Nama diperbarui',
+                    'Nama admin berhasil diperbarui',
+                    type: 'success',
                   );
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal memperbarui nama: $e')),
+                  showKopiNangAlert(
+                    context,
+                    'Gagal',
+                    'Gagal memperbarui nama: $e',
+                    type: 'error',
                   );
                 }
               },
@@ -302,11 +338,12 @@ class _AddAdminPageState extends State<AddAdminPage> {
                                 tooltip: 'Hapus Admin',
                                 onPressed: () {
                                   if (uid == superAdminUid) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      content: Text(
-                                          'Super admin tidak bisa dihapus'),
-                                    ));
+                                    showKopiNangAlert(
+                                      context,
+                                      'Gagal',
+                                      'Super admin tidak bisa dihapus',
+                                      type: 'error',
+                                    );
                                     return;
                                   }
                                   showDialog(

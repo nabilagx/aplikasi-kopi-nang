@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class PromoAdminPage extends StatefulWidget {
   @override
@@ -65,8 +66,11 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
         _potonganController.text.isEmpty ||
         (_tipeDiskon == 'persentase' && _potonganMaksController.text.isEmpty) ||
         (_editingDocId == null && _imageFile == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Isi semua data dan pilih gambar')),
+      showKopiNangAlert(
+        context,
+        "Peringatan",
+        "Isi semua data dan pilih gambar",
+        type: 'warning',
       );
       return;
     }
@@ -78,8 +82,11 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
       imageUrl = await uploadImageToImgur(_imageFile!);
       if (imageUrl == null) {
         setState(() => _isUploading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal upload gambar ke Imgur')),
+        showKopiNangAlert(
+          context,
+          "Gagal",
+          "Gagak upload gambar ke cloud",
+          type: 'error',
         );
         return;
       }
@@ -119,8 +126,13 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
     });
 
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_editingDocId == null ? 'Promo berhasil ditambahkan' : 'Promo berhasil diperbarui')),
+    showKopiNangAlert(
+      context,
+      'Berhasil',
+      _editingDocId == null
+          ? 'Promo berhasil ditambahkan'
+          : 'Promo berhasil diperbarui',
+      type: 'success',
     );
   }
 
@@ -349,8 +361,15 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
             onPressed: () async {
               await FirebaseFirestore.instance.collection('promos').doc(docId).delete();
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Promo berhasil dihapus')));
+              showKopiNangAlert(
+                context,
+                "Promo dihapus",
+                "Promo berhasil dihapus!",
+                type: 'success',
+              );
+
             },
+
             child: Text('Hapus'),
           ),
         ],

@@ -78,6 +78,7 @@ class _KelolaUlasanPageState extends State<KelolaUlasanPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Balasan admin berhasil disimpan')),
       );
+
       setState(() {
         futureUlasan = fetchUlasan();
       });

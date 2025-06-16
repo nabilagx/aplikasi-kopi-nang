@@ -259,7 +259,6 @@ class _CartScreenState extends State<CartScreen> {
         "orderDetails": orderDetails,
       };
 
-      // 1. Buat order dulu tanpa QR code
       final response = await http.post(
         Uri.parse('https://kopinang-api-production.up.railway.app/api/order'),
         headers: {'Content-Type': 'application/json'},

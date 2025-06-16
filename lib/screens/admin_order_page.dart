@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:kopinang/widgets/drawer_admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 
 class AppUser {
@@ -209,18 +210,28 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Status berhasil diperbarui')),
+        showKopiNangAlert(
+          context,
+          'Status Diperbarui',
+          'Status $orderId berhasil diperbarui',
+          type: 'success',
         );
+
         fetchOrders(); // Refresh
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal memperbarui status')),
+        showKopiNangAlert(
+          context,
+          'Gagal',
+          'Status $orderId gagal diperbarui',
+          type: 'error',
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error memperbarui status')),
+      showKopiNangAlert(
+        context,
+        'Error',
+        'Error mmeperbarui status',
+        type: 'error',
       );
     }
   }

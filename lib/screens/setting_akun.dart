@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class PengaturanAkunPage extends StatefulWidget {
   @override
@@ -113,13 +114,20 @@ class _PengaturanAkunPageState extends State<PengaturanAkunPage> {
           'email': _emailController.text,
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Profil berhasil diperbarui')),
+        showKopiNangAlert(
+          context,
+          "Profil diperbarui",
+          "Profil berhasil diperbarui",
+          type: 'success',
         );
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memperbarui profil: $e')),
+        showKopiNangAlert(
+          context,
+          "Gagal",
+          "Gagal memperbarui profil: $e",
+          type: 'error',
         );
+
       }
     }
   }
@@ -148,9 +156,13 @@ class _PengaturanAkunPageState extends State<PengaturanAkunPage> {
         await _user?.delete();
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menghapus akun: $e')),
+        showKopiNangAlert(
+          context,
+          "Gagal",
+          "Gagal menghapus akun: $e",
+          type: 'error',
         );
+
       }
     }
   }

@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:kopinang/widgets/drawer_admin.dart';
+import 'package:kopinang/widgets/kopi_nang_alert.dart';
 
 class VerifikasiPesananPage extends StatefulWidget {
   const VerifikasiPesananPage({Key? key}) : super(key: key);
@@ -27,7 +28,12 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
     if (!status.isGranted) {
       var result = await Permission.camera.request();
       if (!result.isGranted) {
-        _showSnackBar('Izin kamera diperlukan untuk scan QR Code');
+        showKopiNangAlert(
+          context,
+          'Izin Ditolak',
+          'Izin kamera diperlukan untuk scan QR Code',
+          type: 'warning',
+        );
         openAppSettings();
       }
     }
@@ -42,7 +48,12 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
       );
 
       if (response.statusCode == 200) {
-        _showSnackBar('Pesanan $orderId berhasil diverifikasi dan selesai.');
+        showKopiNangAlert(
+          context,
+          'Berhasil',
+          'Pesanan $orderId berhasil diverifikasi dan selesai.',
+          type: 'success',
+        );
       } else {
         String message = 'Gagal verifikasi: ${response.statusCode}';
 
@@ -57,22 +68,24 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
             }
           }
         } catch (_) {
-          // kalau gagal decode, tetap pakai message default
+          // fallback message tetap digunakan
         }
 
-        _showSnackBar(message);
+        showKopiNangAlert(
+          context,
+          'Gagal',
+          message,
+          type: 'error',
+        );
       }
     } catch (e) {
-      _showSnackBar('Error: $e');
+      showKopiNangAlert(
+        context,
+        'Kesalahan',
+        'Terjadi kesalahan saat verifikasi: $e',
+        type: 'error',
+      );
     }
-  }
-
-
-
-  void _showSnackBar(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
   }
 
   void _handleBarcode(BarcodeCapture capture) async {
@@ -155,7 +168,6 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
             ),
         ],
       ),
-
     );
   }
 }
