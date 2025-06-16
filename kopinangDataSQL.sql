@@ -44,39 +44,6 @@ CREATE TABLE ulasan (
     CONSTRAINT unique_user_order_review UNIQUE (order_id, user_id)
 );
 
--- Tabel promo (kalau nanti mau pindah promo ke PostgreSQL)
--- CREATE TABLE promo (
---     id SERIAL PRIMARY KEY,
---     kode VARCHAR(50) UNIQUE NOT NULL,
---     deskripsi TEXT,
---     diskon_persen INTEGER CHECK(diskon_persen >= 0 AND diskon_persen <= 100),
---     tanggal_mulai DATE NOT NULL,
---     tanggal_selesai DATE NOT NULL,
---     aktif BOOLEAN DEFAULT TRUE,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
-select * from produk
-
-select * from orders
-select id and qrcode * from orders
-
-SELECT *
-FROM orders
-WHERE status IS selesai;
-
-SELECT *
-FROM orders
-WHERE status = 'Selesai';
-
-delete from orders
-where id = 19
-
-DELETE FROM orders
-WHERE id IN (1, 3, 4, 5, 6, 7, 8, 13, 15);
-
-
 CREATE TABLE ulasan (
     id SERIAL PRIMARY KEY,
     order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
