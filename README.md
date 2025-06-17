@@ -49,7 +49,7 @@
 
 | Layer        | Teknologi                     |
 |--------------|-------------------------------|
-| Frontend     | Flutter (Mobile & Web)        |
+| Frontend     | Flutter (Mobile)              |
 | Backend      | ASP.NET Core Web API          |
 | Database     | PostgreSQL (Railway)          |
 | Auth         | Firebase Authentication       |
@@ -58,31 +58,13 @@
 | Deployment   | Railway (API & DB)            |
 
 ---
+## ☁️ Deployment ke Railway
 
-## 🚀 Setup Cepat
+API Proyek ini dideploy ke Railway dan dapat diakses melalui:
 
-### 📦 Backend (.NET)
-```bash
-cd kopinang-api
-dotnet restore
-dotnet run
-```
+🔗 [https://kopinang-api-production.up.railway.app](https://kopinang-api-production.up.railway.app)
 
-### 📱 Flutter (Mobile)
-```bash
-flutter pub get
-flutter run
-```
-
-### ⚙️ Konfigurasi Penting
-
-* Buat project Firebase:
-    * Aktifkan Auth Google
-    * Buat koleksi Firestore: `promo`
-* Buat akun Midtrans (sandbox), dapatkan `SERVER_KEY`
-* Sesuaikan konfigurasi API di Flutter & ASP.NET
-
----
+-----
 
 ## 👨‍👩‍👧‍👦 KELOMPOK B07 – Pemrograman Berbasis Mobile
 
@@ -96,7 +78,7 @@ flutter run
 
 ## 📄 Lisensi
 
-Aplikasi ini dikembangkan sebagai tugas akhir **mata kuliah Pemrograman Berbasis Mobile 2025**. Seluruh kode sumber dapat digunakan untuk keperluan pembelajaran dengan mencantumkan atribusi kepada tim pengembang asli.
+Aplikasi ini dikembangkan sebagai tugas akhir **mata kuliah Pemrograman Berbasis Mobile 2025**.
 
 ---
 
