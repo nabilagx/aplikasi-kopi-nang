@@ -330,11 +330,24 @@ class _CartScreenState extends State<CartScreen> {
         print('Status code: ${updateResponse.statusCode}');
         print('Body: ${updateResponse.body}');
 
-
-
-
         if (updateResponse.statusCode != 200) {
           throw Exception('Gagal update QR code ke backend');
+        }
+
+        // stok - qty
+        for (var item in cart.items) {
+          final kurangiStokResponse = await http.put(
+            Uri.parse('https://kopinang-api-production.up.railway.app/api/produk/${item['id']}/kurangi-stok'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $idToken',
+            },
+            body: jsonEncode({"jumlah": item['qty']}),
+          );
+
+          if (kurangiStokResponse.statusCode != 200) {
+            throw Exception('Gagal mengurangi stok produk ${item['nama']}');
+          }
         }
 
         final itemsCopy = List<Map<String, dynamic>>.from(cart.items);
