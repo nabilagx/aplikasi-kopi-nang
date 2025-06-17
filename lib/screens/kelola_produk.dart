@@ -231,12 +231,22 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                         'gambar': imageUrl ?? '',
                         'updatedAt': DateTime.now().toIso8601String(),
                       };
+                      final user = FirebaseAuth.instance.currentUser;
+                      final idToken = await user?.getIdToken();
+
+                      if (idToken == null) {
+                        throw Exception('User belum login atau token tidak ditemukan');
+                      }
 
                       final response = await http.post(
                         Uri.parse(apiBaseUrl),
-                        headers: {'Content-Type': 'application/json'},
+                        headers: {
+                          'Authorization': 'Bearer $idToken',
+                          'Content-Type': 'application/json',
+                        },
                         body: jsonEncode(productData),
                       );
+
 
                       if (response.statusCode != 201) {
                         print('Error response: ${response.body}');
@@ -255,12 +265,23 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                         'updatedAt': DateTime.now().toIso8601String(),
                       };
 
+                      final user = FirebaseAuth.instance.currentUser;
+                      final idToken = await user?.getIdToken();
+
+                      if (idToken == null) {
+                        throw Exception('User belum login atau token tidak ditemukan');
+                      }
+
                       final id = editingProduct!['id'].toString();
                       final response = await http.put(
                         Uri.parse('$apiBaseUrl/$id'),
-                        headers: {'Content-Type': 'application/json'},
+                        headers: {
+                          'Authorization': 'Bearer $idToken',
+                          'Content-Type': 'application/json',
+                        },
                         body: jsonEncode(productData),
                       );
+
 
                       if (response.statusCode != 200) {
                         print('Error response: ${response.body}');
@@ -307,9 +328,16 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
     );
   }
 
-  Future deleteProduct(String id) async {
+  Future deleteProduct(String id, String idToken) async {
     try {
-      final response = await http.delete(Uri.parse('$apiBaseUrl/$id'));
+      final response = await http.delete(
+        Uri.parse('$apiBaseUrl/$id'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
       if (response.statusCode == 200) {
         showKopiNangAlert(
           context,
@@ -318,17 +346,21 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
           type: 'success',
         );
       } else {
+        print('Status Code: ${response.statusCode}');
+        print('Body: ${response.body}');
         throw Exception('Gagal hapus produk');
       }
     } catch (e) {
       showKopiNangAlert(
         context,
-        "Produk Dihapus",
+        "Gagal",
         "Gagal hapus produk: $e",
         type: 'error',
       );
     }
   }
+
+
 
   Future<List<Map<String, dynamic>>> fetchProducts() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -428,9 +460,16 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                                 ],
                               ),
                             );
+                            final user = FirebaseAuth.instance.currentUser;
+                            final idToken = await user?.getIdToken();
+
+                            if (idToken == null) {
+                              showKopiNangAlert(context, "Error", "Token tidak ditemukan", type: 'error');
+                              return;
+                            }
 
                             if (confirmed == true) {
-                              await deleteProduct(p['id'].toString());
+                              await deleteProduct(p['id'].toString(), idToken);
                               setState(() {});
                             }
                           },

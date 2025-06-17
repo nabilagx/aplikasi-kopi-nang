@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../login_screen.dart';
 import '../../widgets/customer_bottom_nav.dart';
 
@@ -17,31 +19,33 @@ class ProfilCustomer extends StatelessWidget {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) =>  LoginScreen()),
+      MaterialPageRoute(builder: (_) => LoginScreen()),
           (route) => false,
     );
   }
 
-  void _hubungiAdmin() async {
-    final url = Uri.parse(
-      "https://wa.me/6281231915747?text=Halo%20Admin%20KOPI%20NANG%2C%20saya%20ingin%20bertanya%20tentang%20pesanan%20saya.",
-    );
+  void _launchURL(String urlString) async {
+    final url = Uri.parse(urlString);
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Tidak dapat membuka WhatsApp.';
+      throw 'Tidak dapat membuka URL.';
     }
+  }
+
+  void _hubungiAdmin() async {
+    _launchURL("https://wa.me/6281231915747?text=Halo%20Admin%20KOPI%20NANG%2C%20saya%20ingin%20bertanya%20tentang%20pesanan%20saya.");
   }
 
   void _bukaPedoman(BuildContext context) {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        backgroundColor: Colors.transparent, // agar efek transparan di luar card
+        backgroundColor: Colors.transparent,
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white, // card putih
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -59,7 +63,6 @@ class ProfilCustomer extends StatelessWidget {
                 height: 60,
               ),
               const SizedBox(height: 16),
-
               const Text(
                 'Pedoman Aplikasi',
                 style: TextStyle(
@@ -69,8 +72,6 @@ class ProfilCustomer extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-
-              // Isi Pedoman
               const Text(
                 "1. Pilih menu favorit Anda.\n"
                     "2. Checkout dan lakukan pembayaran.\n"
@@ -80,10 +81,7 @@ class ProfilCustomer extends StatelessWidget {
                 style: TextStyle(fontSize: 15),
                 textAlign: TextAlign.left,
               ),
-
               const SizedBox(height: 24),
-
-              // Tombol Tutup
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -145,17 +143,38 @@ class ProfilCustomer extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             _buildProfileButton(
-              icon: Icons.phone,
+              iconWidget: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green),
               label: "Hubungi Admin",
               color: Colors.green,
               onTap: _hubungiAdmin,
             ),
             const SizedBox(height: 12),
             _buildProfileButton(
-              icon: Icons.menu_book,
+              iconWidget: const FaIcon(FontAwesomeIcons.bookOpen, color: Colors.blue),
               label: "Pedoman Aplikasi",
               color: Colors.blue,
               onTap: () => _bukaPedoman(context),
+            ),
+            const SizedBox(height: 12),
+            _buildProfileButton(
+              iconWidget: const FaIcon(FontAwesomeIcons.instagram, color: Colors.purple),
+              label: "Instagram",
+              color: Colors.purple,
+              onTap: () => _launchURL("https://www.instagram.com/nang.cns?igsh=MWIyZmllOTB2NXVsNg=="),
+            ),
+            const SizedBox(height: 12),
+            _buildProfileButton(
+              iconWidget: const FaIcon(FontAwesomeIcons.mapLocationDot, color: Colors.orange),
+              label: "Lokasi di Google Maps",
+              color: Colors.orange,
+              onTap: () => _launchURL("https://maps.app.goo.gl/Tyxi346sQeGP1yNeA?g_st=aw"),
+            ),
+            const SizedBox(height: 12),
+            _buildProfileButton(
+              iconWidget: const FaIcon(FontAwesomeIcons.tiktok, color: Colors.black),
+              label: "TikTok",
+              color: Colors.black,
+              onTap: () => _launchURL("https://www.tiktok.com/@nang.cns"),
             ),
             const SizedBox(height: 12),
             _buildProfileButton(
@@ -176,7 +195,8 @@ class ProfilCustomer extends StatelessWidget {
   }
 
   Widget _buildProfileButton({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String label,
     required Color color,
     required VoidCallback onTap,
@@ -192,7 +212,7 @@ class ProfilCustomer extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: color),
+            iconWidget ?? Icon(icon, color: color),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
