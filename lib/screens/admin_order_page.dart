@@ -242,9 +242,9 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
         Uri.parse('https://kopinang-api-production.up.railway.app/api/Order/$orderId/status'),
         headers: {
           'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json-patch+json',
         },
-        body: jsonEncode({"status": newStatus}),
+        body: jsonEncode(newStatus),
       );
 
       if (response.statusCode == 200) {
@@ -262,6 +262,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
           'Status $orderId gagal diperbarui (${response.statusCode})',
           type: 'error',
         );
+        print('Error body: ${response.body}'); // <- Tambah log
       }
     } catch (e) {
       showKopiNangAlert(
@@ -272,6 +273,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
       );
     }
   }
+
 
 
   String getNamaProdukById(int id) {
