@@ -113,7 +113,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
             },
           ),
 
-          // Indicator dots
+          // bentuk dots
           Positioned(
             bottom: 8,
             right: 12,

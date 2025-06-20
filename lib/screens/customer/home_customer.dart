@@ -150,7 +150,6 @@ class _HomeCustomerState extends State<HomeCustomer> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            // Header lokasi dan ikon chat
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

@@ -35,7 +35,7 @@ class LoginScreen extends StatelessWidget {
       // Ambil idToken Firebase
       final idToken = await user.getIdToken();
 
-      // Kirim ke backend ASP.NET buat dapat JWT
+      // Kirim ke backend ASP.NET JWT
       final response = await http.post(
         Uri.parse("https://kopinang-api-production.up.railway.app/api/Auth/firebase-login"),
         headers: {"Content-Type": "application/json"},
@@ -88,7 +88,7 @@ class LoginScreen extends StatelessWidget {
         'photoUrl': user.photoURL ?? '',
       });
 
-      // Cek ulang data setelah dibuat
+      // Cek ulang data
       final newSnapshot = await userDocRef.get();
       final data = newSnapshot.data();
 
@@ -135,7 +135,7 @@ class LoginScreen extends StatelessWidget {
         return;
       }
 
-      // Ada di invite, tambahkan ke users dengan role admin
+      // Ada di invite
       await usersRef.doc(user.uid).set({
         'uid': user.uid,
         'email': user.email,
@@ -173,7 +173,7 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
           Container(
-            color: Colors.black.withOpacity(0.4), // biar teks kelihatan
+            color: Colors.black.withOpacity(0.4),
           ),
           Center(
             child: SingleChildScrollView(

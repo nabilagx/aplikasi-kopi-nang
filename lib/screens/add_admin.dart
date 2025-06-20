@@ -104,7 +104,7 @@ class _AddAdminPageState extends State<AddAdminPage> {
   Future<void> _deleteAdmin(String docId, String uid) async {
     try {
       // Hapus user dari Firebase Auth juga
-      await _auth.currentUser?.getIdToken(); // pastikan user login dulu
+      await _auth.currentUser?.getIdToken();
 
       // Admin hanya bisa dihapus jika bukan super admin
       if (uid == superAdminUid) {
@@ -209,9 +209,9 @@ class _AddAdminPageState extends State<AddAdminPage> {
     if (!isSuperAdmin) {
       return Scaffold(
         drawer: DrawerAdmin(scaffoldContext: context),
-        backgroundColor: Color(0xFFEAF4FB), // Biru soft
+        backgroundColor: Color(0xFFEAF4FB),
         appBar: AppBar(
-          backgroundColor: Color(0xFF0D47A1), // Navy gelap
+          backgroundColor: Color(0xFF0D47A1),
           title: Text('Kelola Admin'),
           foregroundColor: Colors.white,
         ),
@@ -221,9 +221,9 @@ class _AddAdminPageState extends State<AddAdminPage> {
 
     return Scaffold(
       drawer: DrawerAdmin(scaffoldContext: context),
-      backgroundColor: Color(0xFFEAF4FB), // Biru soft
+      backgroundColor: Color(0xFFEAF4FB),
       appBar: AppBar(
-        backgroundColor: Color(0xFF0D47A1), // Navy gelap
+        backgroundColor: Color(0xFF0D47A1),
         title: Text('Kelola Admin'),
         foregroundColor: Colors.white,
       ),
@@ -266,7 +266,7 @@ class _AddAdminPageState extends State<AddAdminPage> {
             ElevatedButton(
               onPressed: _addAdmin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF0D47A1), // Navy gelap
+                backgroundColor: Color(0xFF0D47A1),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 textStyle: TextStyle(fontWeight: FontWeight.bold),

@@ -36,7 +36,7 @@ class DrawerAdmin extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
     final uid = currentUser?.uid;
-    const mainColor = Color(0xFF2B4FFF); // biru khas KOPI NANG
+    const mainColor = Color(0xFF2B4FFF);
 
     return Drawer(
       width: 260,
@@ -63,7 +63,7 @@ class DrawerAdmin extends StatelessWidget {
                 const Text(
                   'Menu Admin',
                   style: TextStyle(
-                    color: Color(0xFF1E3A8A), // Biru navy tua
+                    color: Color(0xFF1E3A8A),
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,

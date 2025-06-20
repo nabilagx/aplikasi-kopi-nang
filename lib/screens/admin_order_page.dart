@@ -170,7 +170,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
       final uid = doc.id;
       final nama = data['name'] ?? 'Tidak diketahui';
 
-      print('>> Firebase User: $uid => $nama'); // Tambah ini
+      print('>> Firebase User: $uid => $nama');
 
       return AppUser(
         uid: uid,
@@ -180,7 +180,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
 
     setState(() {
       userIdToNama = { for (var user in users) user.uid: user.nama };
-      print('>> userIdToNama map: $userIdToNama'); // Tambah ini
+      print('>> userIdToNama map: $userIdToNama');
     });
   }
 
@@ -244,7 +244,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
           'Authorization': 'Bearer $idToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({"status": newStatus}), // ini penting
+        body: jsonEncode({"status": newStatus}),
       );
 
       if (response.statusCode == 200) {
@@ -254,7 +254,7 @@ class _AdminOrderPageState extends State<AdminOrderPage> {
           'Status $orderId berhasil diperbarui',
           type: 'success',
         );
-        fetchOrders(); // refresh data
+        fetchOrders();
       } else {
         showKopiNangAlert(
           context,

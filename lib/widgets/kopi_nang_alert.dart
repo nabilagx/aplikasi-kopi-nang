@@ -4,7 +4,7 @@ void showKopiNangAlert(
     BuildContext context,
     String title,
     String message, {
-      String type = 'success', // bisa: 'success', 'warning', 'error'
+      String type = 'success', // 'success', 'warning', 'error'
     }) {
   IconData icon;
   Color color;
@@ -20,7 +20,7 @@ void showKopiNangAlert(
     case 'success':
     default:
       icon = Icons.check_circle;
-      color = const Color(0xFF0D47A1); // Warna biru khas KOPI NANG
+      color = const Color(0xFF0D47A1);
       break;
   }
 

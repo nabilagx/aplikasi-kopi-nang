@@ -45,18 +45,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
+          // Bg
           SizedBox.expand(
             child: Image.asset(
-              'assets/images/welcome_kopi.png', // Ganti dengan file gambar kamu
+              'assets/images/welcome_kopi.png',
               fit: BoxFit.cover,
             ),
           ),
-          // Black overlay
           Container(
             color: Colors.black.withOpacity(0.4),
           ),
-          // Animated content
           Center(
             child: FadeTransition(
               opacity: _fadeAnimation,

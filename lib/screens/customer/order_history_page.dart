@@ -208,13 +208,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     }
 
     final url = Uri.parse('https://kopinang-api-production.up.railway.app/api/Ulasan');
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $idToken',
-        'Content-Type': 'application/json',
-      },
-    );
+    final headers = {
+      'Authorization': 'Bearer $idToken',
+      'Content-Type': 'application/json',
+    };
+
     final body = json.encode({
       'id': 0,
       'orderId': orderId,
@@ -225,10 +223,10 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       'updatedAt': nowIso,
     });
 
-    final headers = {'Content-Type': 'application/json-patch+json'};
+    final response = await http.post(url, headers: headers, body: body);
 
-    final response_post = await http.post(url, headers: headers, body: body);
-    if (response_post.statusCode == 200 || response.statusCode == 201) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (!mounted) return;
       showKopiNangAlert(
         context,
         "Ulasan Berhasil",
@@ -236,21 +234,25 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         type: 'success',
       );
 
-      // Refresh ulasan untuk order tersebut
+      // Refresh ulasan
       final updatedUlasan = await fetchUlasanByOrderId(orderId);
-      setState(() {
-        ulasanPerOrder[orderId] = updatedUlasan;
-        futureOrders = getUserOrders(); // Jika mau refresh list pesanan juga
-      });
+      if (mounted) {
+        setState(() {
+          ulasanPerOrder[orderId] = updatedUlasan;
+          futureOrders = getUserOrders();
+        });
+      }
     } else {
+      if (!mounted) return;
       showKopiNangAlert(
         context,
         "Gagal",
-        "Gagak mengirim ulasan: ${response.statusCode}",
+        "Gagal mengirim ulasan: ${response.statusCode}",
         type: 'error',
       );
     }
   }
+
 
   @override
   void initState() {
@@ -522,7 +524,6 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                       const SizedBox(height: 2),
                                       Text(ulasan.review),
 
-                                      // Tambahkan bagian ini
                                       if (ulasan.adminReply != null && ulasan.adminReply!.isNotEmpty)
                                         Container(
                                           margin: const EdgeInsets.only(top: 8, left: 12),

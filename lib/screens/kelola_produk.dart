@@ -222,7 +222,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                     Map<String, dynamic> productData;
 
                     if (editingProduct == null) {
-                      // TAMBAH PRODUK (POST) — tanpa id dan createdAt
+                      // update produk
                       productData = {
                         'nama': _namaController.text.trim(),
                         'deskripsi': _deskripsiController.text.trim(),
@@ -253,7 +253,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
                         throw Exception('Gagal tambah produk');
                       }
                     } else {
-                      // EDIT PRODUK (PUT) — dengan id dan createdAt
+                      // buat produk
                       productData = {
                         'id': editingProduct!['id'],
                         'nama': _namaController.text.trim(),
@@ -416,7 +416,7 @@ class _KelolaProdukPageState extends State<KelolaProdukPage> {
 
           return RefreshIndicator(
             onRefresh: () async {
-              setState(() {}); // refresh UI dengan FutureBuilder
+              setState(() {});
             },
             child: ListView.builder(
               itemCount: products.length,

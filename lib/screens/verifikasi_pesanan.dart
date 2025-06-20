@@ -85,7 +85,7 @@ class _VerifikasiPesananPageState extends State<VerifikasiPesananPage> {
             }
           }
         } catch (_) {
-          // Gunakan fallback message
+
         }
 
         showKopiNangAlert(

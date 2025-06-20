@@ -218,10 +218,10 @@ class _LaporanPenjualanPageState extends State<LaporanPenjualanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB), // biru soft
+      backgroundColor: const Color(0xFFEAF4FB),
       appBar: AppBar(
         title: const Text('Laporan Penjualan'),
-        backgroundColor: const Color(0xFF0D47A1), // biru navy gelap
+        backgroundColor: const Color(0xFF0D47A1),
         iconTheme: const IconThemeData(color: Colors.white),
         titleTextStyle: const TextStyle(
           color: Colors.white,

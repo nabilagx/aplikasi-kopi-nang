@@ -22,10 +22,10 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
   File? _imageFile;
   bool _isUploading = false;
   String _tipeDiskon = 'persentase';
-  bool _isAktif = true; // default aktif
+  bool _isAktif = true;
 
 
-  String? _editingDocId; // Untuk edit mode
+  String? _editingDocId; // edit
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -85,7 +85,7 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
         showKopiNangAlert(
           context,
           "Gagal",
-          "Gagak upload gambar ke cloud",
+          "Gagal upload gambar ke cloud",
           type: 'error',
         );
         return;
@@ -160,7 +160,7 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
       _potonganController.text = data['potongan'].toString();
       _tipeDiskon = data['tipe'] ?? 'persentase';
       _potonganMaksController.text = (data['potongan_maks'] ?? '').toString();
-      _imageFile = null; // Reset image for edit, user can pick new image if want
+      _imageFile = null;
       _editingDocId = promoDoc.id;
       _isAktif = data['aktif'] ?? true;
     } else {
@@ -407,7 +407,7 @@ class _PromoAdminPageState extends State<PromoAdminPage> {
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text('Tambah Promo', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[900], // Warna navy gelap
+                backgroundColor: Colors.blue[900],
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),

@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import '../screens/customer/home_customer.dart';
-import '../screens/customer/order_detail_screen.dart';
-// import 'pesanan_customer.dart';
-// import 'riwayat_customer.dart';
 import '../screens/customer/profil_customer.dart';
 import '../screens/customer/order_history_page.dart';
 

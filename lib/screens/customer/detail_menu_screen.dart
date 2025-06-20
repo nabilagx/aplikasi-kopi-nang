@@ -264,7 +264,7 @@ class _DetailMenuScreenState extends State<DetailMenuScreen> {
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        // modal ulasan lengkap
+                        // ulasan lengkap
                       },
                       child: const Text('Lihat Semua Ulasan'),
                     ),

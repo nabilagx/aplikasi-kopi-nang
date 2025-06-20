@@ -180,7 +180,6 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
         ? LatLng(adminLat!, adminLng!)
         : null;
 
-    // Center map di tengah antara admin dan order jika ada, atau admin, atau titik default
     LatLng centerMap = const LatLng(-7.7829, 113.9094);
     if (adminPosition != null && orderPosition != null) {
       centerMap = LatLng(
@@ -192,10 +191,10 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB), // biru soft
+      backgroundColor: const Color(0xFFEAF4FB),
       appBar: AppBar(
         title: const Text('Lacak Pesanan'),
-        backgroundColor: const Color(0xFF0D47A1), // biru navy gelap
+        backgroundColor: const Color(0xFF0D47A1),
         foregroundColor: Colors.white,
       ),
       drawer: DrawerAdmin(
@@ -243,7 +242,7 @@ class _LacakOrderPageState extends State<LacakOrderPage> {
             const SizedBox(height: 10),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D47A1), // navy
+                backgroundColor: const Color(0xFF0D47A1),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                     horizontal: 24, vertical: 12),

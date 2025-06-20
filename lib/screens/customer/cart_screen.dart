@@ -72,7 +72,7 @@ class _CartScreenState extends State<CartScreen> {
         throw Exception("Belanja belum mencapai minimal Rp${minBelanja}");
       }
 
-      // Semua valid → pakai promo
+      // Semua valid pakai promo
       await promoDoc.reference.update({'kuota': kuota - 1});
 
       setState(() {
@@ -153,8 +153,8 @@ class _CartScreenState extends State<CartScreen> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final snapUrl = data['actions'][0]['url']; // ✅ ambil dari actions
-      final orderId = data['order_id']; // ✅ sudah tersedia di response
+      final snapUrl = data['actions'][0]['url']; //  ambil dari actions
+      final orderId = data['order_id']; //  sudah tersedia di response
 
       if (snapUrl != null && orderId != null) {
         Navigator.push(
@@ -197,7 +197,7 @@ class _CartScreenState extends State<CartScreen> {
     final response = await http.post(
       Uri.parse('https://api.imgur.com/3/image'),
       headers: {
-        'Authorization': 'Client-ID a48dbd4c499304d', // Ganti dengan client-id Imgur kamu
+        'Authorization': 'Client-ID a48dbd4c499304d',
       },
       body: {
         'image': base64Encode(pngBytes),
